@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, Star, MessageSquare, CheckCircle, Award, Clock, Shield } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 export function FeaturesSection() {
   const features = [
@@ -41,22 +42,25 @@ export function FeaturesSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (
-            <Card 
-              key={index} 
-              className="border border-primary/20 shadow-md hover:shadow-xl transition-shadow duration-300 group bg-gradient-to-br from-white to-accent/10 overflow-hidden relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <CardHeader className="relative">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
-                  {feature.icon}
-                </div>
-                <div className="absolute top-0 right-0 h-20 w-20 bg-primary/5 rounded-full -mr-10 -mt-10 group-hover:bg-primary/10 transition-colors duration-300"></div>
-                <CardTitle className="text-foreground group-hover:text-primary transition-colors">{feature.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>{feature.description}</CardDescription>
-              </CardContent>
-            </Card>
+            <div key={index} className="relative h-[280px] perspective-card">
+              <div className="feature-card-stack">
+                <div className="feature-card-layer feature-card-layer-1 bg-primary/5"></div>
+                <div className="feature-card-layer feature-card-layer-2 bg-primary/10"></div>
+                <div className="feature-card-layer feature-card-layer-3 bg-primary/20"></div>
+                <Card className="feature-card-main border-primary/20 bg-gradient-to-br from-white to-accent/10 shadow-xl">
+                  <CardHeader className="relative">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
+                      {feature.icon}
+                    </div>
+                    <div className="absolute top-0 right-0 h-20 w-20 bg-primary/5 rounded-full -mr-10 -mt-10 group-hover:bg-primary/10 transition-colors duration-300"></div>
+                    <CardTitle className="text-foreground group-hover:text-primary transition-colors">{feature.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription>{feature.description}</CardDescription>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           ))}
         </div>
       </div>

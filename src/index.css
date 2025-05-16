@@ -135,6 +135,132 @@
     mask-composite: exclude;
     pointer-events: none;
   }
+  
+  /* Stacked Card Effect Styles */
+  .perspective-card {
+    perspective: 1000px;
+  }
+  
+  /* Feature Card Stack */
+  .feature-card-stack {
+    position: relative;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+  }
+  
+  .feature-card-stack:hover {
+    transform: translateY(-5px) rotateX(5deg);
+  }
+  
+  .feature-card-layer {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+    transform-style: preserve-3d;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .feature-card-layer-1 {
+    transform: translateZ(-12px) translateX(8px) translateY(8px);
+  }
+  
+  .feature-card-layer-2 {
+    transform: translateZ(-8px) translateX(4px) translateY(4px);
+  }
+  
+  .feature-card-layer-3 {
+    transform: translateZ(-4px) translateX(2px) translateY(2px);
+  }
+  
+  .feature-card-main {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    transform-style: preserve-3d;
+    z-index: 10;
+    background: white;
+    transition: all 0.3s ease;
+  }
+  
+  /* Testimonial Card Stack */
+  .testimonial-card-stack {
+    position: relative;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+  }
+  
+  .testimonial-card-stack:hover {
+    transform: translateY(-5px) rotateX(5deg);
+  }
+  
+  .testimonial-card-layer {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+    transform-style: preserve-3d;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .testimonial-card-layer-1 {
+    transform: translateZ(-12px) translateX(8px) translateY(8px);
+  }
+  
+  .testimonial-card-layer-2 {
+    transform: translateZ(-8px) translateX(4px) translateY(4px);
+  }
+  
+  .testimonial-card-layer-3 {
+    transform: translateZ(-4px) translateX(2px) translateY(2px);
+  }
+  
+  .testimonial-card-main {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    transform-style: preserve-3d;
+    z-index: 10;
+    background: white;
+    transition: all 0.3s ease;
+  }
+  
+  /* CTA Card Stack */
+  .cta-card-stack {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+  }
+  
+  .cta-card-stack:hover {
+    transform: translateY(-5px) rotateX(2deg);
+  }
+  
+  .cta-card-layer {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .cta-card-layer-1 {
+    transform: translateZ(-12px) translateX(8px) translateY(8px);
+  }
+  
+  .cta-card-layer-2 {
+    transform: translateZ(-8px) translateX(4px) translateY(4px);
+  }
+  
+  .cta-card-layer-3 {
+    transform: translateZ(-4px) translateX(2px) translateY(2px);
+  }
+  
+  .cta-card-main {
+    position: relative;
+    z-index: 10;
+    transform-style: preserve-3d;
+    transition: all 0.3s ease;
+  }
 }
 
 @layer utilities {

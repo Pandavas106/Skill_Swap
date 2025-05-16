@@ -14,25 +14,31 @@ interface TestimonialProps {
 
 function Testimonial({ content, author, role, avatar, className }: TestimonialProps) {
   return (
-    <Card className={cn("h-full transition-shadow duration-300 hover:shadow-lg group relative overflow-hidden border-primary/10", className)}>
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <CardContent className="p-6 flex flex-col h-full relative">
-        <Quote className="h-8 w-8 text-primary/30 absolute top-4 right-4 group-hover:text-primary/60 group-hover:scale-110 transition-all duration-300" />
-        <blockquote className="text-lg font-medium mb-4 flex-1 pt-4">
-          "{content}"
-        </blockquote>
-        <div className="flex items-center gap-4">
-          <Avatar className="h-12 w-12 border-2 border-transparent group-hover:border-primary transition-colors ring ring-primary/10 ring-offset-2 ring-offset-background group-hover:ring-primary/30">
-            <AvatarImage src={avatar} alt={author} />
-            <AvatarFallback>{author.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium group-hover:text-primary transition-colors">{author}</p>
-            <p className="text-sm text-muted-foreground">{role}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="relative h-[320px] perspective-card">
+      <div className="testimonial-card-stack">
+        <div className="testimonial-card-layer testimonial-card-layer-1 bg-primary/5"></div>
+        <div className="testimonial-card-layer testimonial-card-layer-2 bg-primary/10"></div>
+        <div className="testimonial-card-layer testimonial-card-layer-3 bg-primary/20"></div>
+        <Card className={cn("testimonial-card-main border-primary/10", className)}>
+          <CardContent className="p-6 flex flex-col h-full relative">
+            <Quote className="h-8 w-8 text-primary/30 absolute top-4 right-4 group-hover:text-primary/60 group-hover:scale-110 transition-all duration-300" />
+            <blockquote className="text-lg font-medium mb-4 flex-1 pt-4">
+              "{content}"
+            </blockquote>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-12 w-12 border-2 border-transparent group-hover:border-primary transition-colors ring ring-primary/10 ring-offset-2 ring-offset-background group-hover:ring-primary/30">
+                <AvatarImage src={avatar} alt={author} />
+                <AvatarFallback>{author.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium group-hover:text-primary transition-colors">{author}</p>
+                <p className="text-sm text-muted-foreground">{role}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }
 
