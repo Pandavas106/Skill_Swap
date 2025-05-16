@@ -43,14 +43,15 @@ export function FeaturesSection() {
           {features.map((feature, index) => (
             <Card 
               key={index} 
-              className="border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-1 hover:border-primary/30 overflow-hidden"
+              className="border border-primary/20 shadow-md hover:shadow-xl transition-shadow duration-300 group bg-gradient-to-br from-white to-accent/10 overflow-hidden relative"
             >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <CardHeader className="relative">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary transition-colors">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
                   {feature.icon}
                 </div>
-                <div className="absolute top-0 right-0 h-20 w-20 bg-primary/5 rounded-full -mr-10 -mt-10 group-hover:bg-primary/10 transition-colors"></div>
-                <CardTitle className="group-hover:text-primary transition-colors">{feature.title}</CardTitle>
+                <div className="absolute top-0 right-0 h-20 w-20 bg-primary/5 rounded-full -mr-10 -mt-10 group-hover:bg-primary/10 transition-colors duration-300"></div>
+                <CardTitle className="text-foreground group-hover:text-primary transition-colors">{feature.title}</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription>{feature.description}</CardDescription>
