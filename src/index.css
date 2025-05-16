@@ -136,7 +136,53 @@
     pointer-events: none;
   }
   
-  /* Stacked Card Effect Styles */
+  /* Redesigned 3D Card Stack for Hero Section */
+  .perspective-3d {
+    perspective: 2000px;
+    transform-style: preserve-3d;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .card-stack {
+    position: relative;
+    width: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease;
+  }
+  
+  .card-stack:hover {
+    transform: rotate3d(0.5, -0.5, 0, 15deg) translateY(-10px);
+  }
+  
+  .card-layer {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+    transition: all 0.5s ease;
+  }
+  
+  .card-layer-1 {
+    transform: translateZ(-40px) translateX(20px) translateY(20px);
+  }
+  
+  .card-layer-2 {
+    transform: translateZ(-80px) translateX(40px) translateY(40px);
+  }
+  
+  .card-layer-3 {
+    transform: translateZ(-120px) translateX(60px) translateY(60px);
+  }
+  
+  .card-main {
+    position: relative;
+    width: 100%;
+    transform-style: preserve-3d;
+    z-index: 10;
+    transition: all 0.5s ease;
+  }
+  
+  /* Keep existing stacked card effects */
   .perspective-card {
     perspective: 1000px;
   }
