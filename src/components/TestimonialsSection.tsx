@@ -2,6 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Quote } from "lucide-react";
 
 interface TestimonialProps {
   content: string;
@@ -13,18 +14,19 @@ interface TestimonialProps {
 
 function Testimonial({ content, author, role, avatar, className }: TestimonialProps) {
   return (
-    <Card className={cn("h-full", className)}>
-      <CardContent className="p-6 flex flex-col h-full">
-        <blockquote className="text-lg font-medium mb-4 flex-1">
+    <Card className={cn("h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group", className)}>
+      <CardContent className="p-6 flex flex-col h-full relative">
+        <Quote className="h-8 w-8 text-primary/20 absolute top-4 right-4 group-hover:text-primary/40 transition-colors" />
+        <blockquote className="text-lg font-medium mb-4 flex-1 pt-4">
           "{content}"
         </blockquote>
         <div className="flex items-center gap-4">
-          <Avatar>
+          <Avatar className="h-12 w-12 border-2 border-transparent group-hover:border-primary transition-colors">
             <AvatarImage src={avatar} alt={author} />
             <AvatarFallback>{author.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium">{author}</p>
+            <p className="font-medium group-hover:text-primary transition-colors">{author}</p>
             <p className="text-sm text-muted-foreground">{role}</p>
           </div>
         </div>
@@ -59,6 +61,9 @@ export function TestimonialsSection() {
     <section className="py-20 bg-muted/50">
       <div className="container">
         <div className="text-center max-w-2xl mx-auto mb-16">
+          <span className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium mb-4">
+            <Quote className="inline-block h-4 w-4 mr-2" /> Testimonials
+          </span>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Community Says</h2>
           <p className="text-muted-foreground">
             Join thousands of students and professionals who are already growing through skill exchange.
