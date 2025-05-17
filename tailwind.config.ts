@@ -19,6 +19,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'playfair': ['Playfair Display', 'serif'],
+				'futura': ['Futura', 'Trebuchet MS', 'Arial', 'sans-serif']
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
