@@ -8,22 +8,26 @@ export function FeaturesSection() {
     {
       icon: <Users className="h-6 w-6 text-primary group-hover:text-white transition-colors" />,
       title: "Smart Matchmaking",
-      description: "Our AI-powered matching algorithm connects you with the perfect learning partners based on your skills and interests."
+      description: "Our AI-powered matching algorithm connects you with the perfect learning partners based on your skills and interests.",
+      gradientClass: "hover:bg-gradient-pink-orange"
     },
     {
       icon: <Star className="h-6 w-6 text-primary group-hover:text-white transition-colors" />,
       title: "Skill Verification",
-      description: "Earn verification badges by passing skill assessments to stand out as a qualified mentor."
+      description: "Earn verification badges by passing skill assessments to stand out as a qualified mentor.",
+      gradientClass: "hover:bg-gradient-purple-blue"
     },
     {
       icon: <Calendar className="h-6 w-6 text-primary group-hover:text-white transition-colors" />,
       title: "Seamless Scheduling",
-      description: "Easily arrange and manage learning sessions with an integrated calendar system."
+      description: "Easily arrange and manage learning sessions with an integrated calendar system.",
+      gradientClass: "hover:bg-gradient-green-cyan"
     },
     {
       icon: <MessageSquare className="h-6 w-6 text-primary group-hover:text-white transition-colors" />,
       title: "Secure Messaging",
-      description: "Communicate directly with potential matches through our built-in messaging platform."
+      description: "Communicate directly with potential matches through our built-in messaging platform.",
+      gradientClass: "hover:bg-gradient-yellow-orange"
     }
   ];
 
@@ -47,16 +51,16 @@ export function FeaturesSection() {
                 <div className="feature-card-layer feature-card-layer-1 bg-primary/5"></div>
                 <div className="feature-card-layer feature-card-layer-2 bg-primary/10"></div>
                 <div className="feature-card-layer feature-card-layer-3 bg-primary/20"></div>
-                <Card className="feature-card-main border-primary/20 bg-gradient-to-br from-white to-accent/10 shadow-xl">
+                <Card className={`feature-card-main border-primary/20 bg-gradient-to-br from-white to-accent/10 shadow-xl group transition-all duration-300 ${feature.gradientClass}`}>
                   <CardHeader className="relative">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300">
                       {feature.icon}
                     </div>
-                    <div className="absolute top-0 right-0 h-20 w-20 bg-primary/5 rounded-full -mr-10 -mt-10 group-hover:bg-primary/10 transition-colors duration-300"></div>
-                    <CardTitle className="text-foreground group-hover:text-primary transition-colors">{feature.title}</CardTitle>
+                    <div className="absolute top-0 right-0 h-20 w-20 bg-primary/5 rounded-full -mr-10 -mt-10 group-hover:bg-white/10 transition-colors duration-300"></div>
+                    <CardTitle className="text-foreground group-hover:text-white transition-colors">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription>{feature.description}</CardDescription>
+                    <CardDescription className="group-hover:text-white/80 transition-colors">{feature.description}</CardDescription>
                   </CardContent>
                 </Card>
               </div>

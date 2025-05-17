@@ -121,7 +121,11 @@ export default {
 				'float': 'float 6s ease-in-out infinite'
 			},
 			backgroundImage: {
-				'hero-pattern': 'linear-gradient(135deg, rgba(155, 135, 245, 0.15) 0%, rgba(30, 20, 50, 0.05) 100%)'
+				'hero-pattern': 'linear-gradient(135deg, rgba(155, 135, 245, 0.15) 0%, rgba(30, 20, 50, 0.05) 100%)',
+				'gradient-pink-orange': 'linear-gradient(135deg, #ff5f6d 0%, #ffc371 100%)',
+				'gradient-purple-blue': 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)',
+				'gradient-green-cyan': 'linear-gradient(135deg, #10B981 0%, #06B6D4 100%)',
+				'gradient-yellow-orange': 'linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%)'
 			}
 		}
 	},
