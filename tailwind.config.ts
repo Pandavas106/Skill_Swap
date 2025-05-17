@@ -112,20 +112,30 @@ export default {
 					'50%': {
 						transform: 'translateY(-10px)'
 					}
+				},
+				'pulse-star': {
+					'0%, 100%': {
+						opacity: '1'
+					},
+					'50%': {
+						opacity: '0.5'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.5s ease-out',
-				'float': 'float 6s ease-in-out infinite'
+				'float': 'float 6s ease-in-out infinite',
+				'pulse-star': 'pulse-star 2s ease-in-out infinite'
 			},
 			backgroundImage: {
 				'hero-pattern': 'linear-gradient(135deg, rgba(155, 135, 245, 0.15) 0%, rgba(30, 20, 50, 0.05) 100%)',
 				'gradient-pink-orange': 'linear-gradient(135deg, #ff5f6d 0%, #ffc371 100%)',
 				'gradient-purple-blue': 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)',
 				'gradient-green-cyan': 'linear-gradient(135deg, #10B981 0%, #06B6D4 100%)',
-				'gradient-yellow-orange': 'linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%)'
+				'gradient-yellow-orange': 'linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%)',
+				'login-mountains': 'linear-gradient(135deg, #9b87f5 0%, #4c249f 50%, #1A1F2C 100%)'
 			}
 		}
 	},
