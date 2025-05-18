@@ -8,10 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, BookOpen, BookText, Award, Clock, BarChart, TestTube, Calendar } from "lucide-react";
+import { CheckCircle, BookOpen, BookText, Award, Clock, BarChart, TestTube, Calendar, Search, ChevronDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Sample test data
-const availableTests = [
+const allTests = [
   {
     id: 1,
     title: "JavaScript Fundamentals",
@@ -78,6 +80,17 @@ const completedTests = [
 ];
 
 const Test = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [levelFilter, setLevelFilter] = useState("all");
+  
+  const filteredTests = allTests.filter(test => {
+    const matchesSearch = test.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          test.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesLevel = levelFilter === "all" || test.level === levelFilter;
+    
+    return matchesSearch && matchesLevel;
+  });
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -89,50 +102,83 @@ const Test = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="available">
+        <Tabs defaultValue="explore">
           <TabsList className="grid w-full grid-cols-3 mb-8">
-            <TabsTrigger value="available">Available Tests</TabsTrigger>
+            <TabsTrigger value="explore">Explore Tests</TabsTrigger>
             <TabsTrigger value="in-progress">In Progress</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="available">
+          <TabsContent value="explore">
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <div className="relative flex-grow">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search for skills..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={levelFilter} onValueChange={setLevelFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Filter by level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Levels</SelectItem>
+                  <SelectItem value="Beginner">Beginner</SelectItem>
+                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                  <SelectItem value="Advanced">Advanced</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {availableTests.map((test) => (
-                <Card key={test.id} className="transition-all duration-300 hover:shadow-md">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="flex items-center gap-2">
-                        <TestTube className="h-5 w-5 text-primary" />
-                        {test.title}
-                      </CardTitle>
-                      <Badge variant={
-                        test.level === "Beginner" ? "outline" : 
-                        test.level === "Intermediate" ? "secondary" : 
-                        "default"
-                      }>
-                        {test.level}
-                      </Badge>
-                    </div>
-                    <CardDescription>{test.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-1">
-                        <BookText className="h-4 w-4 text-muted-foreground" />
-                        <span>{test.questionCount} questions</span>
+              {filteredTests.length > 0 ? (
+                filteredTests.map((test) => (
+                  <Card key={test.id} className="transition-all duration-300 hover:shadow-md">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="flex items-center gap-2">
+                          <TestTube className="h-5 w-5 text-primary" />
+                          {test.title}
+                        </CardTitle>
+                        <Badge variant={
+                          test.level === "Beginner" ? "outline" : 
+                          test.level === "Intermediate" ? "secondary" : 
+                          "default"
+                        }>
+                          {test.level}
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>{test.estimatedTime}</span>
+                      <CardDescription>{test.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-1">
+                          <BookText className="h-4 w-4 text-muted-foreground" />
+                          <span>{test.questionCount} questions</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span>{test.estimatedTime}</span>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button className="w-full">Start Test</Button>
-                  </CardFooter>
-                </Card>
-              ))}
+                    </CardContent>
+                    <CardFooter>
+                      <Button className="w-full">Start Test</Button>
+                    </CardFooter>
+                  </Card>
+                ))
+              ) : (
+                <div className="col-span-1 md:col-span-2 text-center py-12">
+                  <TestTube className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No tests found</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Try adjusting your search or filter criteria to find tests.
+                  </p>
+                </div>
+              )}
             </div>
           </TabsContent>
           
@@ -183,7 +229,7 @@ const Test = () => {
                 </p>
                 <Button 
                   variant="outline" 
-                  onClick={() => document.querySelector('button[value="available"]')?.dispatchEvent(new Event('click'))}
+                  onClick={() => document.querySelector('button[value="explore"]')?.dispatchEvent(new Event('click'))}
                 >
                   Browse Available Tests
                 </Button>
@@ -257,7 +303,7 @@ const Test = () => {
                 </p>
                 <Button 
                   variant="outline" 
-                  onClick={() => document.querySelector('button[value="available"]')?.dispatchEvent(new Event('click'))}
+                  onClick={() => document.querySelector('button[value="explore"]')?.dispatchEvent(new Event('click'))}
                 >
                   Browse Available Tests
                 </Button>
