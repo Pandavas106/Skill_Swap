@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, BookOpen, BookText, Award, Clock, BarChart, TestTube } from "lucide-react";
+import { CheckCircle, BookOpen, BookText, Award, Clock, BarChart, TestTube, Calendar } from "lucide-react";
 
 // Sample test data
 const availableTests = [
@@ -181,7 +181,10 @@ const Test = () => {
                 <p className="text-muted-foreground mb-6">
                   You don't have any unfinished tests at the moment.
                 </p>
-                <Button variant="outline" onClick={() => document.querySelector('button[value="available"]')?.click()}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => document.querySelector('button[value="available"]')?.dispatchEvent(new Event('click'))}
+                >
                   Browse Available Tests
                 </Button>
               </div>
@@ -213,11 +216,10 @@ const Test = () => {
                       
                       <Progress 
                         value={test.score} 
-                        className="h-2" 
-                        indicatorClassName={
-                          test.score >= 80 ? "bg-green-500" : 
-                          test.score >= 60 ? "bg-amber-500" : "bg-red-500"
-                        } 
+                        className={
+                          test.score >= 80 ? "h-2 bg-green-500/20" : 
+                          test.score >= 60 ? "h-2 bg-amber-500/20" : "h-2 bg-red-500/20"
+                        }
                       />
                       
                       <Separator />
@@ -228,7 +230,7 @@ const Test = () => {
                           <span>Certificate Earned</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
                           <span>Completed on {test.completedOn}</span>
                         </div>
                       </div>
@@ -253,7 +255,10 @@ const Test = () => {
                 <p className="text-muted-foreground mb-6">
                   Complete tests to earn skill badges and showcase your expertise.
                 </p>
-                <Button variant="outline" onClick={() => document.querySelector('button[value="available"]')?.click()}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => document.querySelector('button[value="available"]')?.dispatchEvent(new Event('click'))}
+                >
                   Browse Available Tests
                 </Button>
               </div>
