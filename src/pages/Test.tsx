@@ -8,9 +8,24 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, BookOpen, BookText, Award, Clock, BarChart, TestTube, Calendar, Search, ChevronDown } from "lucide-react";
+import { 
+  CheckCircle, 
+  BookOpen, 
+  BookText, 
+  Award, 
+  Clock, 
+  BarChart, 
+  TestTube, 
+  Calendar, 
+  Search, 
+  AlertCircle,
+  Info
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // Sample test data
 const allTests = [
@@ -82,6 +97,9 @@ const completedTests = [
 const Test = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState("all");
+  const [showNotFoundDialog, setShowNotFoundDialog] = useState(false);
+  const [requestedSkill, setRequestedSkill] = useState("");
+  const { toast } = useToast();
   
   const filteredTests = allTests.filter(test => {
     const matchesSearch = test.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -90,6 +108,34 @@ const Test = () => {
     
     return matchesSearch && matchesLevel;
   });
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim() && !filteredTests.length) {
+      setRequestedSkill(searchQuery);
+      setShowNotFoundDialog(true);
+    }
+  };
+
+  const handleRequestTest = () => {
+    // This would connect to an API to log the request
+    toast({
+      title: "Test Requested",
+      description: `We've logged your request for a ${requestedSkill} skill test.`,
+      duration: 5000,
+    });
+    setShowNotFoundDialog(false);
+  };
+
+  const handleAddUnverified = () => {
+    // This would connect to an API to add the skill as unverified
+    toast({
+      title: "Skill Added",
+      description: `${requestedSkill} has been added as an unverified skill to your profile.`,
+      duration: 5000,
+    });
+    setShowNotFoundDialog(false);
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -110,7 +156,7 @@ const Test = () => {
           </TabsList>
           
           <TabsContent value="explore">
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="relative flex-grow">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -131,7 +177,10 @@ const Test = () => {
                   <SelectItem value="Advanced">Advanced</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+              <Button type="submit" variant="outline">
+                Search
+              </Button>
+            </form>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredTests.length > 0 ? (
@@ -172,11 +221,22 @@ const Test = () => {
                 ))
               ) : (
                 <div className="col-span-1 md:col-span-2 text-center py-12">
-                  <TestTube className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No tests found</h3>
+                  <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No tests found for "{searchQuery}"</h3>
                   <p className="text-muted-foreground mb-6">
-                    Try adjusting your search or filter criteria to find tests.
+                    We don't have a test for this skill yet. Would you like to request one?
                   </p>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <Button 
+                      onClick={() => setShowNotFoundDialog(true)} 
+                      className="bg-[#9b87f5] hover:bg-[#8B5CF6] text-white"
+                    >
+                      Request Test
+                    </Button>
+                    <Button variant="outline" onClick={() => setSearchQuery("")}>
+                      Clear Search
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
@@ -313,6 +373,53 @@ const Test = () => {
         </Tabs>
       </main>
       <Footer />
+
+      {/* Dialog for "No Test Found" scenario */}
+      <Dialog open={showNotFoundDialog} onOpenChange={setShowNotFoundDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Test Not Available</DialogTitle>
+            <DialogDescription>
+              We don't have a test for "{requestedSkill}" yet. You can request this test to be created or add it as an unverified skill to your profile.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center space-x-2 mt-4">
+            <Badge variant="outline" className="bg-[#F1F0FB] text-[#8E9196] border-[#D6BCFA]">
+              Unverified Skill
+            </Badge>
+            <Popover>
+              <PopoverTrigger>
+                <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-4">
+                <div className="space-y-2">
+                  <h4 className="font-medium">About Unverified Skills</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Unverified skills will appear on your profile with an "Unverified" tag.
+                    This indicates that your proficiency has not yet been assessed through our verification system.
+                    These skills are still visible to potential matches but may rank lower in search results.
+                  </p>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-between mt-4">
+            <Button 
+              variant="outline" 
+              onClick={handleAddUnverified} 
+              className="w-full sm:w-auto"
+            >
+              Add as Unverified Skill
+            </Button>
+            <Button 
+              onClick={handleRequestTest} 
+              className="w-full sm:w-auto bg-[#9b87f5] hover:bg-[#8B5CF6] text-white"
+            >
+              Request Test Creation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
