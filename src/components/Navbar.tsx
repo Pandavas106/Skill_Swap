@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Menu, X, Home, ShoppingBag, Users, Calendar, LogIn, UserPlus } from "lucide-react";
+import { Moon, Sun, Menu, X, Home, ShoppingBag, Users, Calendar, LogIn, UserPlus, TestTube } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +30,10 @@ export function Navbar() {
             <Link to="/schedule" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
               <Calendar className="h-4 w-4" />
               <span>Schedule</span>
+            </Link>
+            <Link to="/test" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
+              <TestTube className="h-4 w-4" />
+              <span>Take Test</span>
             </Link>
           </nav>
         </div>
@@ -107,6 +111,14 @@ export function Navbar() {
           >
             <Calendar className="h-5 w-5" />
             Schedule
+          </Link>
+          <Link 
+            to="/test" 
+            className="flex items-center gap-2 text-foreground text-lg font-medium hover:text-primary transition-colors"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <TestTube className="h-5 w-5" />
+            Take Test
           </Link>
           <div className="flex flex-col gap-2 mt-4">
             <Link to="/login" onClick={() => setIsMenuOpen(false)}>
