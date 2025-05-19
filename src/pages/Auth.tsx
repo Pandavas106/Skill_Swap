@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -223,15 +224,15 @@ const Auth = () => {
                   
                   <div className="mt-4">
                     <Button 
-                      variant="outline" 
-                      className="w-full bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border-purple-500/50 text-white hover:bg-purple-500/30 transition-all shadow-md shadow-purple-500/20 hover:shadow-purple-500/40 flex items-center justify-center gap-2 transform hover:translate-y-[-2px]" 
+                      variant="google" 
+                      className="w-full" 
                       disabled={isLoading} 
                       onClick={() => console.log("Google sign-in not implemented")}
                     >
-                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512" fill="currentColor">
+                      <svg className="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512" fill="#4285F4">
                         <path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z" />
                       </svg>
-                      Continue with Google
+                      <span className="font-medium">Continue with Google</span>
                     </Button>
                   </div>
                 </div>
