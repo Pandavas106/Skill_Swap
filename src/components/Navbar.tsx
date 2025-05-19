@@ -1,14 +1,30 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Menu, X, Home, ShoppingBag, Users, Calendar, LogIn, UserPlus, TestTube } from "lucide-react";
+import { Moon, Sun, Menu, X, Home, ShoppingBag, Users, Calendar, LogIn, UserPlus, TestTube, LogOut, User } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-lg">
@@ -53,20 +69,50 @@ export function Navbar() {
             )}
             <span className="sr-only">Toggle theme</span>
           </Button>
+          
           <div className="hidden md:flex items-center gap-2">
-            <Link to="/login">
-              <Button variant="outline" className="flex items-center gap-1.5 hover:bg-accent/40 transition-all duration-300">
-                <LogIn className="h-4 w-4" />
-                Log in
-              </Button>
-            </Link>
-            <Link to="/signup">
-              <Button className="flex items-center gap-1.5 group transition-all duration-300 hover:scale-105">
-                <UserPlus className="h-4 w-4 transition-transform group-hover:scale-110" />
-                Sign up
-              </Button>
-            </Link>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex items-center gap-1.5 hover:bg-accent/40 transition-all duration-300">
+                    <User className="h-4 w-4" />
+                    {user.email?.split('@')[0] || 'Account'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile">Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings">Settings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-500 cursor-pointer">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="outline" className="flex items-center gap-1.5 hover:bg-accent/40 transition-all duration-300">
+                    <LogIn className="h-4 w-4" />
+                    Log in
+                  </Button>
+                </Link>
+                <Link to="/auth?tab=signup">
+                  <Button className="flex items-center gap-1.5 group transition-all duration-300 hover:scale-105">
+                    <UserPlus className="h-4 w-4 transition-transform group-hover:scale-110" />
+                    Sign up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
+          
           <Button
             variant="ghost"
             size="icon"
@@ -120,19 +166,47 @@ export function Navbar() {
             <TestTube className="h-5 w-5" />
             Take Test
           </Link>
+          
           <div className="flex flex-col gap-2 mt-4">
-            <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-              <Button variant="outline" className="w-full flex items-center justify-center gap-2">
-                <LogIn className="h-5 w-5" />
-                Log in
-              </Button>
-            </Link>
-            <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-              <Button className="w-full flex items-center justify-center gap-2">
-                <UserPlus className="h-5 w-5" />
-                Sign up
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <div className="px-2 py-1 text-sm text-muted-foreground">
+                  Signed in as <span className="font-medium">{user.email}</span>
+                </div>
+                <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
+                  <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+                    <User className="h-5 w-5" />
+                    Profile
+                  </Button>
+                </Link>
+                <Button 
+                  onClick={() => {
+                    handleSignOut();
+                    setIsMenuOpen(false);
+                  }} 
+                  variant="destructive" 
+                  className="w-full flex items-center justify-center gap-2"
+                >
+                  <LogOut className="h-5 w-5" />
+                  Log out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                  <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+                    <LogIn className="h-5 w-5" />
+                    Log in
+                  </Button>
+                </Link>
+                <Link to="/auth?tab=signup" onClick={() => setIsMenuOpen(false)}>
+                  <Button className="w-full flex items-center justify-center gap-2">
+                    <UserPlus className="h-5 w-5" />
+                    Sign up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </nav>
       </div>
