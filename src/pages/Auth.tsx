@@ -1,15 +1,15 @@
-
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navbar } from "@/components/Navbar";
+import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -26,17 +26,14 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Get the return path from location state or default to "/"
-  const from = location.state?.from?.pathname || "/";
-  
+  const { toast } = useToast();
+
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate(from, { replace: true });
+      navigate("/");
     }
-  }, [user, navigate, from]);
+  }, [user, navigate]);
 
   // Login form
   const loginForm = useForm<LoginFormValues>({
@@ -48,13 +45,22 @@ const Auth = () => {
   });
 
   // Handle login submission
-  const onLoginSubmit = async (values: LoginFormValues) => {
+  const onSubmit = async (values: LoginFormValues) => {
     setIsLoading(true);
     try {
       await signIn(values.email, values.password);
-      navigate(from, { replace: true });
-    } catch (error) {
+      toast({
+        title: "Login successful!",
+        description: "You have successfully logged into your account.",
+      });
+      navigate("/");
+    } catch (error: any) {
       console.error("Login error:", error);
+      toast({
+        title: "Login failed",
+        description: error.message || "Invalid credentials. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -87,11 +93,11 @@ const Auth = () => {
       <Navbar />
       <div className="relative flex-grow flex flex-col justify-center items-center overflow-hidden">
         {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-800 via-purple-900 to-indigo-950 z-0">
+        <div className="absolute inset-0 bg-login-mountains z-0">
           {/* Animated Blob */}
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-purple-500/20 blur-3xl animate-blob"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-indigo-500/20 blur-3xl animate-blob animation-delay-2000"></div>
-          <div className="absolute top-1/2 left-1/2 w-96 h-96 rounded-full bg-pink-500/20 blur-3xl animate-blob animation-delay-4000"></div>
+          <div className="absolute top-1/4 right-1/4 w-96 h-96 rounded-full bg-purple-500/20 blur-3xl animate-blob"></div>
+          <div className="absolute bottom-1/3 left-1/3 w-96 h-96 rounded-full bg-indigo-500/20 blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute top-1/2 right-1/2 w-96 h-96 rounded-full bg-pink-500/20 blur-3xl animate-blob animation-delay-4000"></div>
           
           {/* Particles Effect */}
           <div className="absolute inset-0 overflow-hidden">
@@ -138,7 +144,7 @@ const Auth = () => {
               </CardHeader>
               <CardContent className="px-6">
                 <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                  <form onSubmit={loginForm.handleSubmit(onSubmit)} className="space-y-4">
                     <FormField
                       control={loginForm.control}
                       name="email"
@@ -159,20 +165,13 @@ const Auth = () => {
                         </FormItem>
                       )}
                     />
+                    
                     <FormField
                       control={loginForm.control}
                       name="password"
                       render={({ field }) => (
                         <FormItem className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <FormLabel className="text-white">Password</FormLabel>
-                            <Link
-                              to="/forgot-password"
-                              className="text-xs text-purple-300 hover:text-white transition-colors"
-                            >
-                              Forgot Password?
-                            </Link>
-                          </div>
+                          <FormLabel className="text-white">Password</FormLabel>
                           <div className="relative">
                             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-300" />
                             <FormControl>
@@ -199,6 +198,7 @@ const Auth = () => {
                         </FormItem>
                       )}
                     />
+                    
                     <Button 
                       type="submit" 
                       className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-medium shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all duration-300 transform hover:translate-y-[-2px] active:translate-y-[0px]" 
@@ -222,9 +222,14 @@ const Auth = () => {
                   </div>
                   
                   <div className="mt-4">
-                    <Button variant="outline" className="w-full border-purple-500/30 text-white hover:bg-purple-500/20 transition-all shadow-md" disabled={isLoading} onClick={() => console.log("Google sign-in not implemented")}>
-                      <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-                        <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z" />
+                    <Button 
+                      variant="outline" 
+                      className="w-full bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border-purple-500/50 text-white hover:bg-purple-500/30 transition-all shadow-md shadow-purple-500/20 hover:shadow-purple-500/40 flex items-center justify-center gap-2 transform hover:translate-y-[-2px]" 
+                      disabled={isLoading} 
+                      onClick={() => console.log("Google sign-in not implemented")}
+                    >
+                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512" fill="currentColor">
+                        <path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z" />
                       </svg>
                       Continue with Google
                     </Button>
