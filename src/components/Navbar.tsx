@@ -103,7 +103,7 @@ export function Navbar() {
                     Log in
                   </Button>
                 </Link>
-                <Link to="/auth?tab=signup">
+                <Link to="/signup">
                   <Button className="flex items-center gap-1.5 group transition-all duration-300 hover:scale-105">
                     <UserPlus className="h-4 w-4 transition-transform group-hover:scale-110" />
                     Sign up
@@ -199,7 +199,7 @@ export function Navbar() {
                     Log in
                   </Button>
                 </Link>
-                <Link to="/auth?tab=signup" onClick={() => setIsMenuOpen(false)}>
+                <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
                   <Button className="w-full flex items-center justify-center gap-2">
                     <UserPlus className="h-5 w-5" />
                     Sign up

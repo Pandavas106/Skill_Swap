@@ -6,35 +6,22 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 
-// Define the form schemas
+// Define the login form schema
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
-const signupSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-  confirmPassword: z.string().min(6, { message: "Password must be at least 6 characters" }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
-
 type LoginFormValues = z.infer<typeof loginSchema>;
-type SignupFormValues = z.infer<typeof signupSchema>;
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("login");
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -55,16 +42,6 @@ const Auth = () => {
     },
   });
 
-  // Signup form
-  const signupForm = useForm<SignupFormValues>({
-    resolver: zodResolver(signupSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
-
   // Handle login submission
   const onLoginSubmit = async (values: LoginFormValues) => {
     setIsLoading(true);
@@ -73,19 +50,6 @@ const Auth = () => {
       navigate(from, { replace: true });
     } catch (error) {
       console.error("Login error:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle signup submission
-  const onSignupSubmit = async (values: SignupFormValues) => {
-    setIsLoading(true);
-    try {
-      await signUp(values.email, values.password);
-      setActiveTab("login");
-    } catch (error) {
-      console.error("Signup error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -137,142 +101,64 @@ const Auth = () => {
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl font-bold text-white">Welcome to SkillSwap</CardTitle>
             <CardDescription className="text-purple-100">
-              Sign in to your account or create a new one
+              Sign in to your account
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs 
-              value={activeTab} 
-              onValueChange={setActiveTab}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/20">
-                <TabsTrigger value="login" className="data-[state=active]:bg-white/40 text-white data-[state=active]:text-white">Login</TabsTrigger>
-                <TabsTrigger value="signup" className="data-[state=active]:bg-white/40 text-white data-[state=active]:text-white">Sign Up</TabsTrigger>
-              </TabsList>
-              <TabsContent value="login">
-                <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                    <FormField
-                      control={loginForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem className="space-y-2">
-                          <FormLabel className="text-white">Email</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="youremail@example.com" 
-                              {...field} 
-                              className="bg-white/30 border-white/30 text-white placeholder:text-purple-200"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-red-200" />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={loginForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <FormLabel className="text-white">Password</FormLabel>
-                            <Link
-                              to="/forgot-password"
-                              className="text-sm text-purple-200 hover:text-white"
-                            >
-                              Forgot password?
-                            </Link>
-                          </div>
-                          <FormControl>
-                            <Input 
-                              type="password" 
-                              placeholder="••••••••" 
-                              {...field} 
-                              className="bg-white/30 border-white/30 text-white placeholder:text-purple-200"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-red-200" />
-                        </FormItem>
-                      )}
-                    />
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-white hover:bg-purple-100 text-purple-600 hover:text-purple-700 transition-all" 
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Signing in..." : "Login"}
-                    </Button>
-                  </form>
-                </Form>
-              </TabsContent>
-              <TabsContent value="signup">
-                <Form {...signupForm}>
-                  <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
-                    <FormField
-                      control={signupForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem className="space-y-2">
-                          <FormLabel className="text-white">Email</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="youremail@example.com" 
-                              {...field} 
-                              className="bg-white/30 border-white/30 text-white placeholder:text-purple-200"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-red-200" />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signupForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem className="space-y-2">
-                          <FormLabel className="text-white">Password</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="password" 
-                              placeholder="••••••••" 
-                              {...field} 
-                              className="bg-white/30 border-white/30 text-white placeholder:text-purple-200"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-red-200" />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signupForm.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem className="space-y-2">
-                          <FormLabel className="text-white">Confirm Password</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="password" 
-                              placeholder="••••••••" 
-                              {...field} 
-                              className="bg-white/30 border-white/30 text-white placeholder:text-purple-200"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-red-200" />
-                        </FormItem>
-                      )}
-                    />
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-white hover:bg-purple-100 text-purple-600 hover:text-purple-700 transition-all" 
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Creating account..." : "Sign Up"}
-                    </Button>
-                  </form>
-                </Form>
-              </TabsContent>
-            </Tabs>
+            <Form {...loginForm}>
+              <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                <FormField
+                  control={loginForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel className="text-white">Email</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="youremail@example.com" 
+                          {...field} 
+                          className="bg-white/30 border-white/30 text-white placeholder:text-purple-200"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-200" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={loginForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <FormLabel className="text-white">Password</FormLabel>
+                        <Link
+                          to="/forgot-password"
+                          className="text-sm text-purple-200 hover:text-white"
+                        >
+                          Forgot password?
+                        </Link>
+                      </div>
+                      <FormControl>
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••" 
+                          {...field} 
+                          className="bg-white/30 border-white/30 text-white placeholder:text-purple-200"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-200" />
+                    </FormItem>
+                  )}
+                />
+                <Button 
+                  type="submit" 
+                  className="w-full bg-white hover:bg-purple-100 text-purple-600 hover:text-purple-700 transition-all" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Signing in..." : "Login"}
+                </Button>
+              </form>
+            </Form>
             
             <div className="mt-6">
               <div className="relative">
@@ -294,6 +180,13 @@ const Auth = () => {
                   Google
                 </Button>
               </div>
+            </div>
+            
+            <div className="mt-6 text-center text-sm">
+              <span className="text-purple-100">Don't have an account? </span>
+              <Link to="/signup" className="text-white hover:underline">
+                Sign up
+              </Link>
             </div>
           </CardContent>
         </Card>
