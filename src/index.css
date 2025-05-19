@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
 
@@ -336,5 +337,37 @@
   
   .text-gradient {
     @apply bg-gradient-to-r from-primary to-violet-400 bg-clip-text text-transparent;
+  }
+  
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+  
+  .glowing-button {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+  
+  .glowing-button:before {
+    @apply content-[''] absolute top-0 left-0 w-full h-full bg-gradient-to-r from-primary to-violet-600 opacity-0 transition-opacity duration-300;
+  }
+  
+  .glowing-button:hover:before {
+    @apply opacity-30;
+  }
+  
+  .input-glow {
+    @apply transition-shadow duration-300;
+  }
+  
+  .input-glow:focus {
+    @apply shadow-[0_0_15px_rgba(124,58,237,0.3)];
+  }
+  
+  .glass-card {
+    @apply backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg;
   }
 }

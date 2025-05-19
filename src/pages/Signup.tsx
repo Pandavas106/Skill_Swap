@@ -1,230 +1,375 @@
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { motion } from "framer-motion";
+
+// Define the signup form schema
+const signupSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  confirmPassword: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  role: z.string().min(1, { message: "Please select your status" }),
+  termsAccepted: z.literal(true, {
+    errorMap: () => ({ message: "You must accept the terms and conditions" }),
+  }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+type SignupFormValues = z.infer<typeof signupSchema>;
 
 const Signup = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { signUp, user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
+  // Signup form
+  const signupForm = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      role: "",
+      termsAccepted: false,
+    },
+  });
+
+  // Handle signup submission
+  const onSignupSubmit = async (values: SignupFormValues) => {
     setIsLoading(true);
-    
-    // Simulate signup process
-    setTimeout(() => {
+    try {
+      await signUp(values.email, values.password);
       toast({
         title: "Account created successfully!",
         description: "Welcome to SkillSwap. Let's set up your profile.",
       });
+      navigate("/");
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      toast({
+        title: "Sign up failed",
+        description: error.message || "There was a problem creating your account",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        when: "beforeChildren",
+        staggerChildren: 0.1,
+        duration: 0.3
+      }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5, ease: "easeOut" }
+    }
   };
 
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
       <div className="relative flex-grow flex flex-col justify-center items-center overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-400 via-purple-600 to-indigo-800 z-0">
-          {/* Skill-related background elements */}
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-800 via-purple-900 to-indigo-950 z-0">
+          {/* Animated Blob */}
+          <div className="absolute top-1/4 right-1/4 w-96 h-96 rounded-full bg-purple-500/20 blur-3xl animate-blob"></div>
+          <div className="absolute bottom-1/3 left-1/3 w-96 h-96 rounded-full bg-indigo-500/20 blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute top-1/2 right-1/2 w-96 h-96 rounded-full bg-pink-500/20 blur-3xl animate-blob animation-delay-4000"></div>
+          
+          {/* Particles Effect */}
           <div className="absolute inset-0 overflow-hidden">
-            {/* Floating skills bubbles */}
-            {Array.from({ length: 15 }).map((_, i) => (
+            {Array.from({ length: 50 }).map((_, i) => (
               <div 
                 key={i}
-                className="absolute rounded-full flex items-center justify-center text-xs font-medium text-white bg-white/10 backdrop-blur-sm border border-white/20 animate-float"
+                className="absolute bg-white rounded-full animate-float"
                 style={{
-                  width: Math.random() * 60 + 40 + "px",
-                  height: Math.random() * 60 + 40 + "px",
+                  width: Math.random() * 4 + 1 + "px",
+                  height: Math.random() * 4 + 1 + "px",
                   top: Math.random() * 100 + "%",
                   left: Math.random() * 100 + "%",
-                  opacity: Math.random() * 0.7 + 0.3,
-                  animationDuration: Math.random() * 10 + 5 + "s",
+                  opacity: Math.random() * 0.5 + 0.1,
+                  animationDuration: Math.random() * 15 + 10 + "s",
                   animationDelay: Math.random() * 5 + "s"
                 }}
-              >
-                {["HTML", "CSS", "JS", "React", "UI/UX", "Design", "Python", "Node", "Java", "Writing", "Art", "Music", "Photo", "Video", "Data"][i % 15]}
-              </div>
+              />
             ))}
           </div>
           
-          {/* Connection lines representing skill connections */}
-          <svg className="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="skill-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity="0.1" />
-              </linearGradient>
-            </defs>
-            <line x1="10%" y1="30%" x2="30%" y2="60%" stroke="url(#skill-gradient)" strokeWidth="1" />
-            <line x1="30%" y1="60%" x2="50%" y2="20%" stroke="url(#skill-gradient)" strokeWidth="1" />
-            <line x1="50%" y1="20%" x2="70%" y2="40%" stroke="url(#skill-gradient)" strokeWidth="1" />
-            <line x1="70%" y1="40%" x2="90%" y2="10%" stroke="url(#skill-gradient)" strokeWidth="1" />
-            <line x1="20%" y1="80%" x2="40%" y2="60%" stroke="url(#skill-gradient)" strokeWidth="1" />
-            <line x1="40%" y1="60%" x2="60%" y2="80%" stroke="url(#skill-gradient)" strokeWidth="1" />
-            <line x1="60%" y1="80%" x2="80%" y2="70%" stroke="url(#skill-gradient)" strokeWidth="1" />
-          </svg>
-          
-          {/* Overlay gradient for better readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-indigo-900/70"></div>
+          {/* Soft gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"></div>
         </div>
         
         {/* Signup Card */}
-        <div className="flex w-full max-w-5xl mx-auto relative z-10 px-4">
-          {/* Left Column with Image and Tagline */}
-          <Card className="hidden md:flex flex-col justify-between p-8 flex-1 bg-indigo-950/50 backdrop-blur-md border-indigo-500/20 text-white">
-            <div className="mb-auto">
-              <h2 className="text-2xl font-bold font-playfair mb-2">SkillSwap</h2>
-              <div className="w-12 h-1 bg-gradient-to-r from-purple-400 to-indigo-300 rounded-full mb-6"></div>
-            </div>
-            
-            <div className="space-y-6 max-w-sm">
-              <h3 className="text-3xl font-playfair leading-tight">
-                Connect, Learn, and Grow Together
-              </h3>
-              <p className="text-indigo-100/90">
-                Join our community of skill enthusiasts where you can exchange knowledge and master new abilities.
-              </p>
-              
-              <div className="flex space-x-2">
-                <div className="w-2 h-2 rounded-full bg-purple-400"></div>
-                <div className="w-2 h-2 rounded-full bg-indigo-400"></div>
-                <div className="w-2 h-2 rounded-full bg-white"></div>
-              </div>
-            </div>
-          </Card>
+        <motion.div 
+          className="relative w-full max-w-xl z-10 px-4 py-10"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          <motion.div variants={itemVariants} className="mb-6 text-center">
+            <h1 className="text-3xl font-bold text-white font-playfair">Create Your SkillSwap Account</h1>
+            <p className="text-purple-200 mt-2">Start teaching and learning with peers today</p>
+          </motion.div>
           
-          {/* Right Column with Signup Form */}
-          <Card className="flex-1 backdrop-blur-md bg-white/10 border-white/30 shadow-xl">
-            <CardHeader className="space-y-1 text-center">
-              <CardTitle className="text-2xl font-bold text-white">Create an account</CardTitle>
-              <CardDescription className="text-purple-100">
-                Enter your information to get started with SkillSwap
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-white">Full Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="bg-white/30 border-white/30 text-white placeholder:text-purple-200"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="bg-white/30 border-white/30 text-white placeholder:text-purple-200"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-white">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="bg-white/30 border-white/30 text-white placeholder:text-purple-200"
-                  />
-                </div>
+          <motion.div variants={itemVariants}>
+            <Card className="backdrop-blur-xl bg-black/40 border-purple-500/30 shadow-xl">
+              <CardHeader className="space-y-1 px-6">
+                <CardTitle className="text-xl font-semibold text-white text-center">Sign Up</CardTitle>
+                <CardDescription className="text-purple-200 text-center">
+                  Create your account and start your skill exchange journey
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-6">
+                <Form {...signupForm}>
+                  <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
+                    <FormField
+                      control={signupForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-white">Full Name</FormLabel>
+                          <div className="relative">
+                            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-300" />
+                            <FormControl>
+                              <Input 
+                                placeholder="Enter your name" 
+                                {...field} 
+                                className="pl-10 bg-black/30 border-purple-500/30 text-white placeholder:text-purple-200 focus:border-purple-400 focus:ring-purple-400/30 transition-all"
+                              />
+                            </FormControl>
+                          </div>
+                          <FormMessage className="text-rose-300 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={signupForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-white">Email</FormLabel>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-300" />
+                            <FormControl>
+                              <Input 
+                                placeholder="Enter your email" 
+                                {...field} 
+                                className="pl-10 bg-black/30 border-purple-500/30 text-white placeholder:text-purple-200 focus:border-purple-400 focus:ring-purple-400/30 transition-all"
+                              />
+                            </FormControl>
+                          </div>
+                          <FormMessage className="text-rose-300 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={signupForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1">
+                            <FormLabel className="text-white">Password</FormLabel>
+                            <div className="relative">
+                              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-300" />
+                              <FormControl>
+                                <Input 
+                                  type={showPassword ? "text" : "password"} 
+                                  placeholder="••••••••" 
+                                  {...field} 
+                                  className="pl-10 pr-10 bg-black/30 border-purple-500/30 text-white placeholder:text-purple-200 focus:border-purple-400 focus:ring-purple-400/30 transition-all"
+                                />
+                              </FormControl>
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-white transition-colors"
+                              >
+                                {showPassword ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </button>
+                            </div>
+                            <FormMessage className="text-rose-300 text-xs" />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={signupForm.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1">
+                            <FormLabel className="text-white">Confirm Password</FormLabel>
+                            <div className="relative">
+                              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-300" />
+                              <FormControl>
+                                <Input 
+                                  type={showConfirmPassword ? "text" : "password"} 
+                                  placeholder="••••••••" 
+                                  {...field} 
+                                  className="pl-10 pr-10 bg-black/30 border-purple-500/30 text-white placeholder:text-purple-200 focus:border-purple-400 focus:ring-purple-400/30 transition-all"
+                                />
+                              </FormControl>
+                              <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-white transition-colors"
+                              >
+                                {showConfirmPassword ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </button>
+                            </div>
+                            <FormMessage className="text-rose-300 text-xs" />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={signupForm.control}
+                      name="role"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-white">Are you a Student or Professional?</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="bg-black/30 border-purple-500/30 text-white focus:border-purple-400 focus:ring-purple-400/30 transition-all">
+                                <SelectValue placeholder="Select your status" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-black/90 border-purple-500/30 text-white backdrop-blur-xl">
+                              <SelectItem value="student" className="focus:bg-purple-500/20 focus:text-white">Student</SelectItem>
+                              <SelectItem value="professional" className="focus:bg-purple-500/20 focus:text-white">Professional</SelectItem>
+                              <SelectItem value="both" className="focus:bg-purple-500/20 focus:text-white">Both</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage className="text-rose-300 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={signupForm.control}
+                      name="termsAccepted"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 mt-6">
+                          <FormControl>
+                            <Checkbox 
+                              checked={field.value} 
+                              onCheckedChange={field.onChange} 
+                              className="data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500 border-purple-500/50"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-white text-xs">
+                              I agree to the{" "}
+                              <Link to="/terms" className="text-purple-400 hover:text-white transition-colors">
+                                Terms of Service
+                              </Link>{" "}
+                              and{" "}
+                              <Link to="/privacy" className="text-purple-400 hover:text-white transition-colors">
+                                Privacy Policy
+                              </Link>
+                            </FormLabel>
+                            <FormMessage className="text-rose-300 text-xs" />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-medium shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all duration-300 transform hover:translate-y-[-2px] active:translate-y-[0px]" 
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Creating account..." : "Sign Up"}
+                    </Button>
+                  </form>
+                </Form>
                 
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="terms" 
-                    required 
-                    className="border-white/50 data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500"
-                  />
-                  <label
-                    htmlFor="terms"
-                    className="text-sm leading-none text-white"
-                  >
-                    I agree to the{" "}
-                    <Link to="/terms" className="text-purple-300 hover:underline">
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link to="/privacy" className="text-purple-300 hover:underline">
-                      Privacy Policy
-                    </Link>
-                  </label>
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full bg-purple-500 hover:bg-purple-600 text-white transition-all" 
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Creating account..." : "Create account"}
-                </Button>
-              </form>
-              
-              <div className="mt-6">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-white/30" />
+                <div className="mt-6">
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-white/10" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="px-2 text-purple-200 bg-black/30 backdrop-blur-sm">
+                        Or continue with
+                      </span>
+                    </div>
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-transparent px-2 text-purple-100">
-                      Or continue with
-                    </span>
+                  
+                  <div className="mt-4">
+                    <Button variant="outline" className="w-full border-purple-500/30 text-white hover:bg-purple-500/20 transition-all shadow-md" disabled={isLoading} onClick={() => console.log("Google sign-in not implemented")}>
+                      <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                        <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z" />
+                      </svg>
+                      Continue with Google
+                    </Button>
                   </div>
                 </div>
                 
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <Button variant="outline" className="border-white/30 text-white hover:bg-white/20" disabled={isLoading}>
-                    <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-                      <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z" />
-                    </svg>
-                    Google
-                  </Button>
-                  <Button variant="outline" className="border-white/30 text-white hover:bg-white/20" disabled={isLoading}>
-                    <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
-                      <path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
-                    </svg>
-                    Apple
-                  </Button>
+                <div className="mt-6 text-center text-sm">
+                  <span className="text-purple-200">Already have an account? </span>
+                  <Link to="/auth" className="text-purple-400 hover:text-white font-medium hover:underline transition-colors">
+                    Sign In
+                  </Link>
                 </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-2 text-center pb-6">
-              <div className="text-sm text-purple-100">
-                Already have an account?{" "}
-                <Link
-                  to="/login"
-                  className="text-white underline-offset-4 hover:underline"
-                >
-                  Sign in
-                </Link>
-              </div>
-            </CardFooter>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.div>
       </div>
-      <Footer />
     </div>
   );
 };

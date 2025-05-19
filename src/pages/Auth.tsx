@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { motion } from "framer-motion";
 
 // Define the login form schema
 const loginSchema = z.object({
@@ -21,6 +23,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,9 +32,11 @@ const Auth = () => {
   const from = location.state?.from?.pathname || "/";
   
   // Redirect if already logged in
-  if (user) {
-    navigate(from, { replace: true });
-  }
+  useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, from]);
 
   // Login form
   const loginForm = useForm<LoginFormValues>({
@@ -55,141 +60,187 @@ const Auth = () => {
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        when: "beforeChildren",
+        staggerChildren: 0.1,
+        duration: 0.3
+      }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5, ease: "easeOut" }
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
       <div className="relative flex-grow flex flex-col justify-center items-center overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-300 via-purple-500 to-indigo-900 z-0">
-          {/* Mountains */}
-          <div className="absolute bottom-0 left-0 right-0">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" className="w-full">
-              <path fill="#1A1F2C" fillOpacity="0.8" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,208C672,213,768,203,864,170.7C960,139,1056,85,1152,69.3C1248,53,1344,75,1392,85.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-            </svg>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" className="w-full absolute bottom-0">
-              <path fill="#0C1221" fillOpacity="0.9" d="M0,288L48,272C96,256,192,224,288,229.3C384,235,480,277,576,277.3C672,277,768,235,864,224C960,213,1056,235,1152,240C1248,245,1344,235,1392,229.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-            </svg>
-          </div>
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-800 via-purple-900 to-indigo-950 z-0">
+          {/* Animated Blob */}
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-purple-500/20 blur-3xl animate-blob"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-indigo-500/20 blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 rounded-full bg-pink-500/20 blur-3xl animate-blob animation-delay-4000"></div>
           
-          {/* Stars */}
+          {/* Particles Effect */}
           <div className="absolute inset-0 overflow-hidden">
             {Array.from({ length: 50 }).map((_, i) => (
               <div 
                 key={i}
-                className="absolute bg-white rounded-full animate-pulse"
+                className="absolute bg-white rounded-full animate-float"
                 style={{
-                  width: Math.random() * 3 + 1 + "px",
-                  height: Math.random() * 3 + 1 + "px",
+                  width: Math.random() * 4 + 1 + "px",
+                  height: Math.random() * 4 + 1 + "px",
                   top: Math.random() * 100 + "%",
                   left: Math.random() * 100 + "%",
-                  opacity: Math.random() * 0.7 + 0.3,
-                  animationDuration: Math.random() * 3 + 2 + "s"
+                  opacity: Math.random() * 0.5 + 0.1,
+                  animationDuration: Math.random() * 15 + 10 + "s",
+                  animationDelay: Math.random() * 5 + "s"
                 }}
               />
             ))}
           </div>
           
-          {/* Clouds */}
-          <div className="absolute top-10 left-10 w-32 h-16 bg-purple-200 rounded-full opacity-70" />
-          <div className="absolute top-20 left-32 w-48 h-20 bg-purple-200 rounded-full opacity-60" />
-          <div className="absolute top-5 right-20 w-40 h-16 bg-purple-200 rounded-full opacity-70" />
-          <div className="absolute top-32 right-12 w-28 h-14 bg-purple-200 rounded-full opacity-60" />
+          {/* Soft gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"></div>
         </div>
         
-        {/* Auth Card */}
-        <Card className="relative w-full max-w-md z-10 backdrop-blur-md bg-white/20 border-white/30 shadow-xl">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold text-white">Welcome to SkillSwap</CardTitle>
-            <CardDescription className="text-purple-100">
-              Sign in to your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...loginForm}>
-              <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                <FormField
-                  control={loginForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel className="text-white">Email</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="youremail@example.com" 
-                          {...field} 
-                          className="bg-white/30 border-white/30 text-white placeholder:text-purple-200"
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-200" />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={loginForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <FormLabel className="text-white">Password</FormLabel>
-                        <Link
-                          to="/forgot-password"
-                          className="text-sm text-purple-200 hover:text-white"
-                        >
-                          Forgot password?
-                        </Link>
-                      </div>
-                      <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="••••••••" 
-                          {...field} 
-                          className="bg-white/30 border-white/30 text-white placeholder:text-purple-200"
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-200" />
-                    </FormItem>
-                  )}
-                />
-                <Button 
-                  type="submit" 
-                  className="w-full bg-white hover:bg-purple-100 text-purple-600 hover:text-purple-700 transition-all" 
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Signing in..." : "Login"}
-                </Button>
-              </form>
-            </Form>
-            
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-white/30" />
+        {/* Login Card */}
+        <motion.div 
+          className="relative w-full max-w-md z-10 px-4"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          <motion.div variants={itemVariants} className="mb-6 text-center">
+            <h1 className="text-3xl font-bold text-white font-playfair">Welcome Back to SkillSwap</h1>
+            <p className="text-purple-200 mt-2">Continue growing through skill exchange</p>
+          </motion.div>
+          
+          <motion.div variants={itemVariants}>
+            <Card className="backdrop-blur-xl bg-black/40 border-purple-500/30 shadow-xl">
+              <CardHeader className="space-y-1 px-6">
+                <CardTitle className="text-xl font-semibold text-white text-center">Sign In</CardTitle>
+                <CardDescription className="text-purple-200 text-center">
+                  Enter your credentials to access your account
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-6">
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                    <FormField
+                      control={loginForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-white">Email</FormLabel>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-300" />
+                            <FormControl>
+                              <Input 
+                                placeholder="Enter your email" 
+                                {...field} 
+                                className="pl-10 bg-black/30 border-purple-500/30 text-white placeholder:text-purple-200 focus:border-purple-400 focus:ring-purple-400/30 transition-all"
+                              />
+                            </FormControl>
+                          </div>
+                          <FormMessage className="text-rose-300 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <FormLabel className="text-white">Password</FormLabel>
+                            <Link
+                              to="/forgot-password"
+                              className="text-xs text-purple-300 hover:text-white transition-colors"
+                            >
+                              Forgot Password?
+                            </Link>
+                          </div>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-300" />
+                            <FormControl>
+                              <Input 
+                                type={showPassword ? "text" : "password"} 
+                                placeholder="••••••••" 
+                                {...field} 
+                                className="pl-10 pr-10 bg-black/30 border-purple-500/30 text-white placeholder:text-purple-200 focus:border-purple-400 focus:ring-purple-400/30 transition-all"
+                              />
+                            </FormControl>
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-white transition-colors"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                          <FormMessage className="text-rose-300 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-medium shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all duration-300 transform hover:translate-y-[-2px] active:translate-y-[0px]" 
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Signing in..." : "Sign In"}
+                    </Button>
+                  </form>
+                </Form>
+                
+                <div className="mt-6">
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-white/10" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="px-2 text-purple-200 bg-black/30 backdrop-blur-sm">
+                        Or continue with
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <Button variant="outline" className="w-full border-purple-500/30 text-white hover:bg-purple-500/20 transition-all shadow-md" disabled={isLoading} onClick={() => console.log("Google sign-in not implemented")}>
+                      <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                        <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z" />
+                      </svg>
+                      Continue with Google
+                    </Button>
+                  </div>
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="px-2 text-purple-100 bg-transparent">
-                    Or continue with
-                  </span>
+                
+                <div className="mt-6 text-center text-sm">
+                  <span className="text-purple-200">New here? </span>
+                  <Link to="/signup" className="text-purple-400 hover:text-white font-medium hover:underline transition-colors">
+                    Create your account
+                  </Link>
                 </div>
-              </div>
-              
-              <div className="mt-4">
-                <Button variant="outline" className="w-full border-white/30 text-white hover:bg-white/20" disabled={isLoading} onClick={() => console.log("Google sign-in not implemented")}>
-                  <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-                    <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z" />
-                  </svg>
-                  Google
-                </Button>
-              </div>
-            </div>
-            
-            <div className="mt-6 text-center text-sm">
-              <span className="text-purple-100">Don't have an account? </span>
-              <Link to="/signup" className="text-white hover:underline">
-                Sign up
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

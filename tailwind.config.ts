@@ -120,6 +120,20 @@ export default {
 					'50%': {
 						opacity: '0.5'
 					}
+				},
+				'blob': {
+					'0%': {
+						transform: 'translate(0px, 0px) scale(1)'
+					},
+					'33%': {
+						transform: 'translate(30px, -30px) scale(1.1)'
+					},
+					'66%': {
+						transform: 'translate(-20px, 20px) scale(0.9)'
+					},
+					'100%': {
+						transform: 'translate(0px, 0px) scale(1)'
+					}
 				}
 			},
 			animation: {
@@ -127,7 +141,8 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.5s ease-out',
 				'float': 'float 6s ease-in-out infinite',
-				'pulse-star': 'pulse-star 2s ease-in-out infinite'
+				'pulse-star': 'pulse-star 2s ease-in-out infinite',
+				'blob': 'blob 10s infinite'
 			},
 			backgroundImage: {
 				'hero-pattern': 'linear-gradient(135deg, rgba(155, 135, 245, 0.15) 0%, rgba(30, 20, 50, 0.05) 100%)',
