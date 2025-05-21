@@ -19,6 +19,7 @@ import Matches from "./pages/Matches";
 import Schedule from "./pages/Schedule";
 import Test from "./pages/Test";
 import AdminTestRequests from "./pages/AdminTestRequests";
+import TestingPage from "./pages/testing";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/testing" element={<TestingPage />} />
               <Route path="/marketplace" element={
                 <ProtectedRoute>
                   <Marketplace />

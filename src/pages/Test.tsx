@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -8,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Link } from "react-router-dom";
 import { 
   CheckCircle, 
   BookOpen, 
@@ -27,8 +27,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
+
+
 // Sample test data
-const allTests = [
+export const allTests = [
   {
     id: 1,
     title: "JavaScript Fundamentals",
@@ -215,7 +217,18 @@ const Test = () => {
                       </div>
                     </CardContent>
                     <CardFooter>
-                      <Button className="w-full">Start Test</Button>
+                      <Link 
+                        to="/testing" 
+                        state={{
+                          title: test.title,
+                          description: test.description,
+                          level: test.level,
+                          estimatedTime: test.estimatedTime,
+                          questionCount: test.questionCount
+                        }}
+                      >
+                        <Button>Start Test</Button>
+                      </Link>
                     </CardFooter>
                   </Card>
                 ))
