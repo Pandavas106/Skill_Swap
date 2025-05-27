@@ -1,10 +1,7 @@
-
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Menu, X, Home, ShoppingBag, Users, Calendar, LogIn, UserPlus, TestTube, LogOut, User } from "lucide-react";
+import { Moon, Sun, ShoppingBag, Users, Calendar, TestTube, User } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
@@ -17,7 +14,6 @@ import {
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -27,181 +23,101 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-lg">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2 group">
-            <span className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold transition-transform group-hover:scale-110">S</span>
-            <span className="font-playfair text-lg font-semibold group-hover:text-primary transition-colors">SkillSwap</span>
-          </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link to="/marketplace" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-              <ShoppingBag className="h-4 w-4" />
-              <span>Marketplace</span>
-            </Link>
-            <Link to="/matches" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-              <Users className="h-4 w-4" />
-              <span>Matches</span>
-            </Link>
-            <Link to="/schedule" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-              <Calendar className="h-4 w-4" />
-              <span>Schedule</span>
-            </Link>
-            <Link to="/test" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-              <TestTube className="h-4 w-4" />
-              <span>Take Test</span>
-            </Link>
-          </nav>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="rounded-full transition-transform hover:scale-110"
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-          
-          <div className="hidden md:flex items-center gap-2">
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-1.5 hover:bg-accent/40 transition-all duration-300">
-                    <User className="h-4 w-4" />
-                    {user.email?.split('@')[0] || 'Account'}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile">Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/settings">Settings</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="text-red-500 cursor-pointer">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <>
-                <Link to="/auth">
-                  <Button variant="outline" className="flex items-center gap-1.5 hover:bg-accent/40 transition-all duration-300">
-                    <LogIn className="h-4 w-4" />
-                    Log in
-                  </Button>
-                </Link>
-                <Link to="/signup">
-                  <Button className="flex items-center gap-1.5 group transition-all duration-300 hover:scale-105">
-                    <UserPlus className="h-4 w-4 transition-transform group-hover:scale-110" />
-                    Sign up
-                  </Button>
-                </Link>
-              </>
-            )}
-          </div>
-          
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            <span className="sr-only">Toggle menu</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      <div
-        className={cn(
-          "md:hidden fixed inset-0 top-16 z-50 bg-background px-6 py-8 transition-transform duration-300 ease-in-out",
-          isMenuOpen ? "translate-x-0" : "translate-x-full"
-        )}
+    <header className="w-full z-50">
+      <nav
+        className="
+          fixed top-0 left-1/2 -translate-x-1/2
+          w-full max-w-6xl
+          flex items-center justify-between
+          bg-[#232136]/95
+          backdrop-blur-xl
+          rounded-full
+          border border-[#28283a]
+          shadow-lg
+          px-6 py-2.5
+          mt-4
+          z-50
+          transition-all
+        "
+        style={{ minHeight: 64 }}
       >
-        <nav className="flex flex-col gap-6">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 group select-none">
+          <span className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white font-bold text-xl shadow-md border border-white/10 transition-transform group-hover:scale-110">
+            S
+          </span>
+          <span className="font-playfair text-2xl font-semibold group-hover:text-primary transition-colors tracking-wide text-white">
+            SkillSwap
+          </span>
+        </Link>
+
+        {/* Center: Nav Links with icons */}
+        <div className="flex items-center gap-2 mx-4">
           <Link 
             to="/marketplace" 
-            className="flex items-center gap-2 text-foreground text-lg font-medium hover:text-primary transition-colors"
-            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-base font-medium text-white/90 hover:bg-[#28284a] transition-colors border border-transparent hover:border-[#3a2e5a]"
           >
             <ShoppingBag className="h-5 w-5" />
-            Marketplace
+            <span className="hidden sm:inline">Marketplace</span>
           </Link>
           <Link 
             to="/matches" 
-            className="flex items-center gap-2 text-foreground text-lg font-medium hover:text-primary transition-colors"
-            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-base font-medium text-white/90 hover:bg-[#28284a] transition-colors border border-transparent hover:border-[#3a2e5a]"
           >
             <Users className="h-5 w-5" />
-            Matches
+            <span className="hidden sm:inline">Matches</span>
           </Link>
           <Link 
             to="/schedule" 
-            className="flex items-center gap-2 text-foreground text-lg font-medium hover:text-primary transition-colors"
-            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-base font-medium text-white/90 hover:bg-[#28284a] transition-colors border border-transparent hover:border-[#3a2e5a]"
           >
             <Calendar className="h-5 w-5" />
-            Schedule
+            <span className="hidden sm:inline">Schedule</span>
           </Link>
           <Link 
             to="/test" 
-            className="flex items-center gap-2 text-foreground text-lg font-medium hover:text-primary transition-colors"
-            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-base font-medium text-white/90 hover:bg-[#28284a] transition-colors border border-transparent hover:border-[#3a2e5a]"
           >
             <TestTube className="h-5 w-5" />
-            Take Test
+            <span className="hidden sm:inline">Take Test</span>
           </Link>
-          
-          <div className="flex flex-col gap-2 mt-4">
-            {user ? (
-              <>
-                <div className="px-2 py-1 text-sm text-muted-foreground">
-                  Signed in as <span className="font-medium">{user.email}</span>
-                </div>
-                <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="outline" className="w-full flex items-center justify-center gap-2">
-                    <User className="h-5 w-5" />
-                    Profile
-                  </Button>
-                </Link>
+        </div>
+
+        {/* Right: Theme toggle & Profile */}
+        <div className="flex items-center gap-2">
                 <Button 
-                  onClick={() => {
-                    handleSignOut();
-                    setIsMenuOpen(false);
-                  }} 
-                  variant="destructive" 
-                  className="w-full flex items-center justify-center gap-2"
-                >
-                  <LogOut className="h-5 w-5" />
-                  Log out
+            variant="ghost"
+            size="icon"
+            className="rounded-full text-yellow-400 hover:bg-[#28284a]"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="rounded-full px-4 py-2 text-base font-medium bg-[#28284a] text-white border border-[#3a2e5a] hover:bg-[#2d2d44]">
+                  <User className="h-5 w-5 mr-2" />
+                  <span className="hidden sm:inline">{user.email?.split('@')[0]}</span>
                 </Button>
-              </>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-2xl shadow-lg border border-[#3a2e5a] mt-2 bg-[#23233a] text-white">
+                <DropdownMenuLabel>Signed in as <span className="font-semibold">{user.email}</span></DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/profile')}>Profile</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut} className="text-red-500">Log out</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             ) : (
               <>
-                <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="outline" className="w-full flex items-center justify-center gap-2">
-                    <LogIn className="h-5 w-5" />
+              <Link to="/auth">
+                <Button variant="outline" className="rounded-full px-4 py-2 text-base font-medium border border-[#3a2e5a] text-white bg-transparent hover:bg-[#28284a]">
                     Log in
                   </Button>
                 </Link>
-                <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full flex items-center justify-center gap-2">
-                    <UserPlus className="h-5 w-5" />
+              <Link to="/signup">
+                <Button className="rounded-full px-4 py-2 text-base font-medium bg-gradient-to-r from-primary to-purple-500 text-white border-0 shadow-md">
                     Sign up
                   </Button>
                 </Link>
@@ -209,7 +125,8 @@ export function Navbar() {
             )}
           </div>
         </nav>
-      </div>
+      {/* Spacer to prevent content from being hidden under the fixed navbar */}
+      <div style={{ height: 88 }}></div>
     </header>
   );
 }
