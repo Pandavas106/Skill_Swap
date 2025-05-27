@@ -1,9 +1,12 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Sparkles, Users, Calendar, BookOpen, BadgeCheck, Search, Award } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function HeroSection() {
+  const { user } = useAuth();
+
   return (
     <section className="relative py-20 md:py-32 overflow-hidden">
       <div className="absolute inset-0 bg-hero-pattern -z-10"></div>
@@ -22,12 +25,23 @@ export function HeroSection() {
               A peer-to-peer platform where you can teach what you know and learn what you don't. No payments, just skills.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-4">
-              <Link to="/signup">
-                <Button size="lg" className="w-full sm:w-auto group transition-all duration-300 hover:scale-105">
-                  Join SkillSwap
-                  <Users className="ml-2 h-4 w-4 transition-transform group-hover:scale-110" />
-                </Button>
-              </Link>
+              <AnimatePresence>
+                {!user && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Link to="/signup">
+                      <Button size="lg" className="w-full sm:w-auto group transition-all duration-300 hover:scale-105">
+                        Join SkillSwap
+                        <Users className="ml-2 h-4 w-4 transition-transform group-hover:scale-110" />
+                      </Button>
+                    </Link>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <Link to="/marketplace">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto group hover:bg-accent/40 transition-all duration-300">
                   Explore Skills

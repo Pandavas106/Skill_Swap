@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+
+
 
 // Pages
 import Index from "./pages/Index";
@@ -20,6 +21,7 @@ import Schedule from "./pages/Schedule";
 import Test from "./pages/Test";
 import AdminTestRequests from "./pages/AdminTestRequests";
 import TestingPage from "./pages/testing";
+import Profile from "./pages/profile";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +62,11 @@ const App = () => (
               <Route path="/admin/test-requests" element={
                 <ProtectedRoute>
                   <AdminTestRequests />
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               } />
               <Route path="*" element={<NotFound />} />
