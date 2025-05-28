@@ -8,16 +8,65 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { MessageCircle, Video, Clock, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { Tables } from "@/integrations/supabase/types"; // Import Supabase types
+// import { supabase } from "@/integrations/supabase/client";
+// import { useAuth } from "@/contexts/AuthContext";
+// import { Tables } from "@/integrations/supabase/types"; // Import Supabase types
 
 // Sample data (will be replaced)
-// const matchesData = [
-//   { /* ... sample data ... */ }
-// ];
+const matchesData = [
+  {
+    id: "1",
+    full_name: "Alex Johnson",
+    avatar_url: "/avatars/01.png", // Replace with actual image path if available
+    skills_teach: ["JavaScript", "React", "Node.js"],
+    skills_learn: ["Python", "Machine Learning"],
+    matchScore: 92,
+    lastActive: "2 hours ago",
+    status: "online",
+  },
+  {
+    id: "2",
+    full_name: "Jamie Smith",
+    avatar_url: "/avatars/02.png", // Replace with actual image path if available
+    skills_teach: ["UX Design", "Figma", "Adobe XD"],
+    skills_learn: ["Frontend Development", "React"],
+    matchScore: 87,
+    lastActive: "1 day ago",
+    status: "away",
+  },
+  {
+    id: "3",
+    full_name: "Taylor Davis",
+    avatar_url: "/avatars/03.png", // Replace with actual image path if available
+    skills_teach: ["Python", "Data Science", "SQL"],
+    skills_learn: ["JavaScript", "React Native"],
+    matchScore: 83,
+    lastActive: "Just now",
+    status: "online",
+  },
+  {
+    id: "4",
+    full_name: "Morgan Williams",
+    avatar_url: "/avatars/04.png", // Replace with actual image path if available
+    skills_teach: ["Marketing", "Content Creation"],
+    skills_learn: ["SEO", "Social Media Strategy"],
+    matchScore: 79,
+    lastActive: "3 days ago",
+    status: "offline",
+  },
+  {
+    id: "5",
+    full_name: "Riley Brown",
+    avatar_url: "/avatars/05.png", // Replace with actual image path if available
+    skills_teach: ["Graphic Design", "Illustration"],
+    skills_learn: ["UI Design", "Animation"],
+    matchScore: 75,
+    lastActive: "5 hours ago",
+    status: "online",
+  },
+];
 
-type MatchProfile = Tables<'profiles'> & { matchScore?: number }; // Augment profile type with matchScore
+// type MatchProfile = Tables<'profiles'> & { matchScore?: number }; // Augment profile type with matchScore
 
 type SkillBadgeProps = {
   name: string;
@@ -197,164 +246,119 @@ const MatchCard = ({ match }: { match: MatchProfile }) => {
 };
 
 // Function to find skill swap matches based on reciprocal overlap
-export async function findSkillSwapMatches(
-    currentUserId: string,
-    skillsToTeach: string[],
-    skillsToLearn: string[]
-): Promise<MatchProfile[]> {
-    try {
-        // **Temporary logging to check skills and user ID**
-        console.log("skillsToLearn:", skillsToLearn);
-        console.log("skillsToTeach:", skillsToTeach);
-        console.log("currentUserId:", currentUserId);
-
-        // **Temporary logging to validate types**
-        console.log("skillsToLearn is array:", Array.isArray(skillsToLearn));
-        console.log("skillsToTeach is array:", Array.isArray(skillsToTeach));
-        if (skillsToLearn.length > 0) console.log("Type of skillsToLearn[0]:", typeof skillsToLearn[0]);
-        if (skillsToTeach.length > 0) console.log("Type of skillsToTeach[0]:", typeof skillsToTeach[0]);
-
-
-        // Fetch users where:
-        // 1. Their skills_teach overlaps with my skills_learn (they can teach what I want to learn)
-        // 2. AND their skills_learn overlaps with my skills_teach (they want to learn what I can teach)
-        // 3. Exclude the current user
-        const { data: matchedProfiles, error: matchesError } = await supabase
-            .from('profiles')
-            .select('*')
-            .neq('id', currentUserId)
-            .overlaps('skills_teach', skillsToLearn)
-            .overlaps('skills_learn', skillsToTeach);
-
-        // **Temporary logging for Supabase response**
-        console.log("Matches returned:", matchedProfiles);
-        console.log("Supabase error:", matchesError);
-
-        if (matchesError) {
-            throw matchesError;
-        }
-
-        if (matchedProfiles) {
-             // Note: Match score calculation is not included in this function.
-            return matchedProfiles as MatchProfile[];
-        }
-
-        return [];
-
-    } catch (err) {
-        console.error("Error finding skill swap matches:", err);
-        return [];
-    }
-}
+// export async function findSkillSwapMatches(
+// ... existing code ...
+//     return [];
+// }
 
 const Matches = () => {
-  const { user } = useAuth();
-  const [mySkills, setMySkills] = useState<{ teach: string[], learn: string[] } | null>(null);
-  const [matches, setMatches] = useState<MatchProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // const { user } = useAuth();
+  // const [mySkills, setMySkills] = useState<{ teach: string[], learn: string[] } | null>(null);
+  // const [matches, setMatches] = useState<MatchProfile[]>([]);
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchAndSetMatches() {
-      if (!user) {
-        setLoading(false);
-        setMySkills(null);
-        setMatches([]);
-        return;
-      }
+  // useEffect(() => {
+  //   async function fetchAndSetMatches() {
+  //     if (!user) {
+  //       setLoading(false);
+  //       setMySkills(null);
+  //       setMatches([]);
+  //       return;
+  //     }
 
-      setLoading(true);
-      setError(null);
+  //     setLoading(true);
+  //     setError(null);
 
-      try {
-        // 1. Fetch current user's skills
-        const { data: myProfileData, error: myProfileError } = await supabase
-          .from('profiles')
-          .select('skills_teach, skills_learn')
-          .eq('id', user.id)
-          .single();
+  //     try {
+  //       // 1. Fetch current user's skills
+  //       const { data: myProfileData, error: myProfileError } = await supabase
+  //         .from('profiles')
+  //         .select('skills_teach, skills_learn')
+  //         .eq('id', user.id)
+  //         .single();
 
-        if (myProfileError) {
-          throw myProfileError;
-        }
+  //       if (myProfileError) {
+  //         throw myProfileError;
+  //       }
 
-        const teachSkills = myProfileData?.skills_teach || [];
-        const learnSkills = myProfileData?.skills_learn || [];
-        setMySkills({ teach: teachSkills, learn: learnSkills });
+  //       const teachSkills = myProfileData?.skills_teach || [];
+  //       const learnSkills = myProfileData?.skills_learn || [];
+  //       setMySkills({ teach: teachSkills, learn: learnSkills });
 
-        // 2. Use the new findSkillSwapMatches function
-        const fetchedMatches = await findSkillSwapMatches(user.id, teachSkills, learnSkills);
+  //       // 2. Use the new findSkillSwapMatches function
+  //       const fetchedMatches = await findSkillSwapMatches(user.id, teachSkills, learnSkills);
 
-        // Calculate match score for each fetched match (optional, depending on desired display)
-        const matchesWithScore = fetchedMatches.map(match => {
-          const matchTeachSkills = match.skills_teach || [];
-          const matchLearnSkills = match.skills_learn || [];
+  //       // Calculate match score for each fetched match (optional, depending on desired display)
+  //       const matchesWithScore = fetchedMatches.map(match => {
+  //         const matchTeachSkills = match.skills_teach || [];
+  //         const matchLearnSkills = match.skills_learn || [];
 
-          const teachOverlap = matchTeachSkills.filter(skill => learnSkills.includes(skill));
-          const learnOverlap = matchLearnSkills.filter(skill => teachSkills.includes(skill));
+  //         const teachOverlap = matchTeachSkills.filter(skill => learnSkills.includes(skill));
+  //         const learnOverlap = matchLearnSkills.filter(skill => teachSkills.includes(skill));
 
-          const totalMySkills = teachSkills.length + learnSkills.length;
-          let matchScore = 0;
-          if (totalMySkills > 0) {
-            matchScore = Math.round(((teachOverlap.length + learnOverlap.length) / totalMySkills) * 100);
-          }
+  //         const totalMySkills = teachSkills.length + learnSkills.length;
+  //         let matchScore = 0;
+  //         if (totalMySkills > 0) {
+  //           matchScore = Math.round(((teachOverlap.length + learnOverlap.length) / totalMySkills) * 100);
+  //         }
 
-          return { ...match, matchScore };
-        });
+  //         return { ...match, matchScore };
+  //       });
 
-        setMatches(matchesWithScore);
+  //       setMatches(matchesWithScore);
 
-      } catch (err: any) {
-        console.error("Error fetching matches:", err);
-        setError(err.message);
-        setMatches([]);
-      } finally {
-        setLoading(false);
-      }
-    }
+  //     } catch (err: any) {
+  //       console.error("Error fetching matches:", err);
+  //       setError(err.message);
+  //       setMatches([]);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
 
-    fetchAndSetMatches();
+  //   fetchAndSetMatches();
 
-  }, [user]); // Re-run effect if user changes
+  // }, [user]); // Re-run effect if user changes
 
-  if (loading) {
-    return (
-       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#28243c] via-[#322c54] to-[#3b2f5e]">
-         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-       </div>
-     );
-  }
+  // if (loading) {
+  //   return (
+  //      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#28243c] via-[#322c54] to-[#3b2f5e]">
+  //        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+  //      </div>
+  //    );
+  // }
 
-  if (error) {
-    return <div className="min-h-screen flex items-center justify-center text-rose-400">Error loading matches: {error}</div>;
-  }
+  // if (error) {
+  //   return <div className="min-h-screen flex items-center justify-center text-rose-400">Error loading matches: {error}</div>;
+  // }
 
-  if (!user) {
-       return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Please log in to view matches.</div>;
-  }
+  // if (!user) {
+  //      return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Please log in to view matches.</div>;
+  // }
 
   // Conditionally render based on whether mySkills has been loaded and if there are matches
-   if (mySkills && mySkills.teach.length === 0 && mySkills.learn.length === 0) {
-         return (
-              <div className="min-h-screen flex items-center justify-center text-muted-foreground">
-                 <div className="text-center">
-                      <h2 className="text-2xl font-bold mb-4">Complete Your Profile!</h2>
-                      <p>Please add skills you can teach and want to learn to find matches.</p>
-                 </div>
-             </div>
-         );
-    }
+  //  if (mySkills && mySkills.teach.length === 0 && mySkills.learn.length === 0) {
+  //        return (
+  //             <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+  //                <div className="text-center">
+  //                     <h2 className="text-2xl font-bold mb-4">Complete Your Profile!</h2>
+  //                     <p>Please add skills you can teach and want to learn to find matches.</p>
+  //                </div>
+  //            </div>
+  //        );
+  //   }
 
-   if (matches.length === 0 && mySkills && (mySkills.teach.length > 0 || mySkills.learn.length > 0)) {
-         return (
-             <div className="min-h-screen flex items-center justify-center text-muted-foreground">
-                 <div className="text-center">
-                      <h2 className="text-2xl font-bold mb-4">No matches found... yet!</h2>
-                      <p>Try adding more skills to your profile to find people who can teach you or learn from you.</p>
-                 </div>
-             </div>
-         );
-     }
+  //  if (matches.length === 0 && mySkills && (mySkills.teach.length > 0 || mySkills.learn.length > 0)) {
+  //        return (
+  //            <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+  //                <div className="text-center">
+  //                     <h2 className="text-2xl font-bold mb-4">No matches found... yet!</h2>
+  //                     <p>Try adding more skills to your profile to find people who can teach you or learn from you.</p>
+  //                </div>
+  //            </div>
+  //        );
+  //    }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -368,7 +372,7 @@ const Matches = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {matches.map((match, index) => (
+          {matchesData.map((match, index) => (
             <div
               key={match.id}
               className="animate-fade-in"
