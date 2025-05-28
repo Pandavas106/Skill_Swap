@@ -110,9 +110,14 @@ const StatusBadge = ({ status }: StatusBadgeProps) => {
     />
   );
 };
-
 // Updated MatchCard props
-const MatchCard = ({ match }: { match: MatchProfile }) => {
+const MatchCard = ({ match }: { match: { 
+  skills_teach?: string[];
+  skills_learn?: string[];
+  avatar_url?: string;
+  full_name?: string;
+  matchScore?: number;
+} }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   // Provide default values for optional columns if null
