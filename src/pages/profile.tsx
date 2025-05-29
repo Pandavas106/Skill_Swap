@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { User, Image, MapPin, GraduationCap, Languages, BookOpen, Users, Info, Link as LinkIcon, Plus, Camera, Info as InfoIcon } from "lucide-react";
+import { User, Image, MapPin, GraduationCap, Languages, BookOpen, Users, Info, Link as LinkIcon, Plus, Camera, Info as InfoIcon, Award, Badge } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { Button } from "react-day-picker";
 
 const skillOptions = [
   "JavaScript", "Python", "UI/UX Design", "Public Speaking", "Data Science", "Marketing", "Writing", "Photography", "Music", "Other"
@@ -20,6 +21,8 @@ interface ProfileForm {
   language: string;
   portfolio: string;
   avatarUrl: string | null;
+  verified_skills?: Record<string, any>;
+  completed_tests?: Record<string, any>;
 }
 
 interface ProfileErrors {
@@ -49,6 +52,8 @@ export default function Profile() {
     language: "",
     portfolio: "",
     avatarUrl: null,
+    verified_skills: {},
+    completed_tests: {},
   });
   const [errors, setErrors] = useState<ProfileErrors>({});
   const [profilePicPreview, setProfilePicPreview] = useState<string | null>(null);
@@ -83,7 +88,7 @@ export default function Profile() {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('*')
+          .select('*, verified_skills, completed_tests')
           .eq('id', user.id)
           .single();
 
@@ -92,9 +97,10 @@ export default function Profile() {
         }
 
         if (data) {
+          console.log('Loaded profile data:', data);
           setForm({
             fullName: data.full_name || "",
-            profilePic: null, // Don't load the file object, just the URL preview
+            profilePic: null,
             location: data.location || "",
             role: data.role || "",
             skillsTeach: data.skills_teach || [],
@@ -102,11 +108,13 @@ export default function Profile() {
             bio: data.bio || "",
             language: data.language || "",
             portfolio: data.portfolio || "",
-            avatarUrl: data.avatar_url || null, // Load avatar_url from the database
+            avatarUrl: data.avatar_url || null,
+            verified_skills: data.verified_skills || {},
+            completed_tests: data.completed_tests || {}
           });
 
           if (data.avatar_url) {
-            setProfilePicPreview(data.avatar_url); // Use avatar_url for preview
+            setProfilePicPreview(data.avatar_url);
           }
         }
       } catch (error) {
@@ -249,6 +257,7 @@ export default function Profile() {
             bio: form.bio,
             language: form.language,
             portfolio: form.portfolio,
+            verified_skills: form.verified_skills,
             updated_at: new Date().toISOString(),
         };
 
@@ -521,6 +530,64 @@ export default function Profile() {
             </div>
             {touched.skillsTeach && errors.skillsTeach && <div className="text-sm text-rose-400">{errors.skillsTeach}</div>}
           </div>
+
+          {/* Verified Skills Section */}
+          {Object.keys(form.verified_skills || {}).length > 0 ? (
+            <div className="mt-4 p-4 rounded-xl bg-indigo-900/20 border border-indigo-700">
+              <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <Award className="h-5 w-5 text-indigo-400" />
+                Verified Skills
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {Object.entries(form.verified_skills || {}).map(([skill, data]: [string, any]) => {
+                  const completedTest = form.completed_tests?.[skill];
+                  return (
+                    <div key={skill} className="flex items-center justify-between p-3 rounded-lg bg-indigo-800/20 border border-indigo-700">
+                      <div>
+                        <p className="font-medium text-white">{skill}</p>
+                        <p className="text-sm text-indigo-300">
+                          Score: {data.score}% • {new Date(data.completedOn).toLocaleDateString()}
+                        </p>
+                        {completedTest && (
+                          <p className="text-xs text-indigo-400 mt-1">
+                            Last completed: {new Date(completedTest.completedOn).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge className={`${
+                          data.level === 'Expert' ? 'bg-green-500/20 text-green-400' :
+                          data.level === 'Advanced' ? 'bg-blue-500/20 text-blue-400' :
+                          'bg-amber-500/20 text-amber-400'
+                        }`}>
+                          {data.level}
+                        </Badge>
+                        <button
+                          type="button"
+                          className="text-xs border border-gray-600 rounded px-2 py-1 hover:bg-gray-700 transition-colors"
+                          onClick={() => navigate('/testing', {
+                            state: {
+                              title: skill,
+                              description: `Retake test for ${skill}`,
+                              level: data.level,
+                              estimatedTime: "30 min",
+                              questionCount: 20
+                            }
+                          })}
+                        >
+                          Retake Test
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="mt-4 p-4 rounded-xl bg-indigo-900/20 border border-indigo-700">
+              <p className="text-indigo-300 text-center">No verified skills</p>
+            </div>
+          )}
 
           {/* Skills You Want to Learn (multi-select + custom) */}
           <div>
