@@ -1,17 +1,23 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GEMINI_API_KEY } from "./key";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const BATCH_SIZE = 5; // Number of questions to generate at once
 
 export default function TestingPage() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const { title, description, level, estimatedTime, questionCount } = location.state || {};
 
   // Add validation and default values
@@ -183,6 +189,106 @@ export default function TestingPage() {
     ? answers.reduce((acc, ans, idx) => ans === questions[idx]?.correct ? acc + 1 : acc, 0)
     : 0;
 
+  const handleTestCompletion = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to save your test results",
+        variant: "destructive",
+        duration: 5000,
+      });
+      return;
+    }
+
+    try {
+      console.log('Starting test completion for user:', user.id);
+      console.log('Test details:', { title, score, totalQuestions: questions.length });
+
+      // Get current profile data
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('verified_skills, completed_tests')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        throw profileError;
+      }
+
+      console.log('Current profile data:', profile);
+
+      // Calculate score percentage
+      const scorePercentage = (score / questions.length) * 100;
+      console.log('Score percentage:', scorePercentage);
+
+      // Add to completed tests regardless of score
+      const completedTests = profile?.completed_tests || {};
+      completedTests[title] = {
+        score: scorePercentage,
+        completedOn: new Date().toISOString()
+      };
+
+      // Only add badge if score is ≥75%
+      let badgeLevel = null;
+      if (scorePercentage >= 90) badgeLevel = "Expert";
+      else if (scorePercentage >= 80) badgeLevel = "Advanced";
+      else if (scorePercentage >= 75) badgeLevel = "Proficient";
+
+      // Update verified skills only if badge is earned
+      const verifiedSkills = profile?.verified_skills || {};
+      if (badgeLevel) {
+        verifiedSkills[title] = {
+          level: badgeLevel,
+          score: scorePercentage,
+          completedOn: new Date().toISOString()
+        };
+      }
+
+      // Update profile with both completed tests and verified skills
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ 
+          completed_tests: completedTests,
+          verified_skills: verifiedSkills 
+        })
+        .eq('id', user.id);
+
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+        throw updateError;
+      }
+
+      console.log('Profile updated successfully');
+
+      // Show appropriate toast message
+      if (badgeLevel) {
+        toast({
+          title: "Skill Verified! 🎉",
+          description: `You've earned a ${badgeLevel} badge in ${title}`,
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: "Test Completed",
+          description: "You've completed the test! Keep practicing to earn a badge.",
+          duration: 5000,
+        });
+      }
+
+      // Navigate back to test page
+      navigate('/test');
+    } catch (error) {
+      console.error('Error updating test results:', error);
+      toast({
+        title: "Error",
+        description: `Failed to update test results: ${error.message}`,
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
+  };
+
   if (!started) {
     return (
       <div className="flex justify-center p-6">
@@ -316,7 +422,7 @@ export default function TestingPage() {
               Retake Test
             </Button>
             <Button 
-              onClick={() => window.location.href = '/test'}
+              onClick={handleTestCompletion}
               className="flex-1 bg-[#9b87f5] hover:bg-[#8B5CF6] text-white"
             >
               Complete Test

@@ -61,9 +61,34 @@ const SkillCard = ({ profile }) => {
           <div>
             <p className="text-sm text-muted-foreground mb-1">Teaching</p>
             <div className="flex flex-wrap gap-2">
-              {profile.skills_teach?.map((skill, index) => (
-                <Badge key={index} className="bg-skill-beginner">{skill}</Badge>
-              ))}
+              {profile.skills_teach?.map((skill, index) => {
+                const verifiedSkill = profile.verified_skills?.[skill];
+                return (
+                  <div key={index} className="relative group">
+                    <Badge 
+                      className={`${
+                        verifiedSkill 
+                          ? "bg-primary/20 text-primary border-primary" 
+                          : "bg-skill-beginner"
+                      }`}
+                    >
+                      {skill}
+                      {verifiedSkill && (
+                        <span className="ml-1 text-xs">
+                          ({verifiedSkill.level})
+                        </span>
+                      )}
+                    </Badge>
+                    {verifiedSkill && (
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black/90 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        Score: {verifiedSkill.score}%
+                        <br />
+                        Completed: {new Date(verifiedSkill.completedOn).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
           
@@ -288,7 +313,10 @@ const Marketplace = () => {
             <TabsContent value="verified">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProfiles
-                  .filter((profile) => profile.role === "Professional")
+                  .filter((profile) => {
+                    // Check if profile has any verified skills
+                    return Object.keys(profile.verified_skills || {}).length > 0;
+                  })
                   .map((profile) => (
                     <SkillCard key={profile.id} profile={profile} />
                   ))}
