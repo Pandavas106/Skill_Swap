@@ -6,8 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-
-
+import FloatingChatButton from "@/components/FloatingChatButton";
 
 // Pages
 import Index from "./pages/Index";
@@ -22,6 +21,7 @@ import Test from "./pages/Test";
 import AdminTestRequests from "./pages/AdminTestRequests";
 import TestingPage from "./pages/testing";
 import Profile from "./pages/profile";
+import Chat from "./pages/Chat";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +49,11 @@ const App = () => (
                   <Matches />
                 </ProtectedRoute>
               } />
+              <Route path="/chat" element={
+                <ProtectedRoute>
+                  <Chat />
+                </ProtectedRoute>
+              } />
               <Route path="/schedule" element={
                 <ProtectedRoute>
                   <Schedule />
@@ -71,6 +76,7 @@ const App = () => (
               } />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <FloatingChatButton />
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
