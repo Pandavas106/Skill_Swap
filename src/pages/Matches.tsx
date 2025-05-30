@@ -8,6 +8,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { MessageCircle, Video, Clock, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 // import { supabase } from "@/integrations/supabase/client";
 // import { useAuth } from "@/contexts/AuthContext";
 // import { Tables } from "@/integrations/supabase/types"; // Import Supabase types
@@ -112,6 +113,7 @@ const StatusBadge = ({ status }: StatusBadgeProps) => {
 };
 // Updated MatchCard props
 const MatchCard = ({ match }: { match: { 
+  id: string;
   skills_teach?: string[];
   skills_learn?: string[];
   avatar_url?: string;
@@ -119,13 +121,18 @@ const MatchCard = ({ match }: { match: {
   matchScore?: number;
 } }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
 
   // Provide default values for optional columns if null
   const skillsTeach = match.skills_teach || [];
   const skillsLearn = match.skills_learn || [];
-  const avatarUrl = match.avatar_url || '/placeholder.svg'; // Use avatar_url
+  const avatarUrl = match.avatar_url || '/placeholder.svg';
   const fullName = match.full_name || 'No Name';
-  const matchScore = match.matchScore || 0; // Use calculated matchScore
+  const matchScore = match.matchScore || 0;
+
+  const handleChatClick = () => {
+    navigate(`/chat?user=${match.id}`);
+  };
 
   // Assuming status and lastActive are not fetched, using placeholders
   const status = 'offline'; // Placeholder status
@@ -212,9 +219,10 @@ const MatchCard = ({ match }: { match: {
           variant="outline"
           size="sm"
           className="flex-1 gap-1 transition-all hover:bg-primary/10 hover:text-primary"
+          onClick={handleChatClick}
         >
           <MessageCircle className="h-4 w-4" />
-          <span>Message</span>
+          <span>Chat Now</span>
         </Button>
 
         <Button
