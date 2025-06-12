@@ -39,41 +39,16 @@ const App = () => (
               <Route path="/signup" element={<Signup />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/testing" element={<TestingPage />} />
-              <Route path="/marketplace" element={
-                <ProtectedRoute>
-                  <Marketplace />
-                </ProtectedRoute>
-              } />
-              <Route path="/matches" element={
-                <ProtectedRoute>
-                  <Matches />
-                </ProtectedRoute>
-              } />
-              <Route path="/chat" element={
-                <ProtectedRoute>
-                  <Chat />
-                </ProtectedRoute>
-              } />
-              <Route path="/schedule" element={
-                <ProtectedRoute>
-                  <Schedule />
-                </ProtectedRoute>
-              } />
-              <Route path="/test" element={
-                <ProtectedRoute>
-                  <Test />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/test-requests" element={
-                <ProtectedRoute>
-                  <AdminTestRequests />
-                </ProtectedRoute>
-              } />
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              } />
+              <Route path="/marketplace" element={<Marketplace />} />
+              <Route path="/matches" element={<Matches />} />
+              <Route path="/chat" element={<Chat />} />
+              <Route path="/schedule" element={<Schedule />} />
+              <Route path="/test" element={<Test />} />
+              <Route
+                path="/admin/test-requests"
+                element={<AdminTestRequests />}
+              />
+              <Route path="/profile" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <FloatingChatButton />
