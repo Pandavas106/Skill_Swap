@@ -8,10 +8,8 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { MessageCircle, Video, Clock, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
-// import { supabase } from "@/integrations/supabase/client";
-// import { useAuth } from "@/contexts/AuthContext";
-// import { Tables } from "@/integrations/supabase/types"; // Import Supabase types
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Sample data (will be replaced)
 const matchesData = [
@@ -265,133 +263,138 @@ const MatchCard = ({ match }: { match: {
 // }
 
 const Matches = () => {
-  // const { user } = useAuth();
-  // const [mySkills, setMySkills] = useState<{ teach: string[], learn: string[] } | null>(null);
-  // const [matches, setMatches] = useState<MatchProfile[]>([]);
-  // const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const [requests, setRequests] = useState([]);
 
-  // useEffect(() => {
-  //   async function fetchAndSetMatches() {
-  //     if (!user) {
-  //       setLoading(false);
-  //       setMySkills(null);
-  //       setMatches([]);
-  //       return;
-  //     }
+  useEffect(() => {
+    async function fetchRequests() {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('requests')
+        .select('*, from_user(full_name, avatar_url)')
+        .eq('to_user', user.id)
+        .eq('status', 'pending');
+      setRequests(data || []);
+    }
+    fetchRequests();
+  }, [user]);
 
-  //     setLoading(true);
-  //     setError(null);
+  // Accept request
+  const handleAccept = async (id) => {
+    await supabase.from('requests').update({ status: 'accepted' }).eq('id', id);
+    setRequests(requests.filter(req => req.id !== id));
+    // Optionally: notify both users, create a match, etc.
+  };
 
-  //     try {
-  //       // 1. Fetch current user's skills
-  //       const { data: myProfileData, error: myProfileError } = await supabase
-  //         .from('profiles')
-  //         .select('skills_teach, skills_learn')
-  //         .eq('id', user.id)
-  //         .single();
+  // Reject request
+  const handleReject = async (id) => {
+    await supabase.from('requests').update({ status: 'rejected' }).eq('id', id);
+    setRequests(requests.filter(req => req.id !== id));
+  };
 
-  //       if (myProfileError) {
-  //         throw myProfileError;
-  //       }
-
-  //       const teachSkills = myProfileData?.skills_teach || [];
-  //       const learnSkills = myProfileData?.skills_learn || [];
-  //       setMySkills({ teach: teachSkills, learn: learnSkills });
-
-  //       // 2. Use the new findSkillSwapMatches function
-  //       const fetchedMatches = await findSkillSwapMatches(user.id, teachSkills, learnSkills);
-
-  //       // Calculate match score for each fetched match (optional, depending on desired display)
-  //       const matchesWithScore = fetchedMatches.map(match => {
-  //         const matchTeachSkills = match.skills_teach || [];
-  //         const matchLearnSkills = match.skills_learn || [];
-
-  //         const teachOverlap = matchTeachSkills.filter(skill => learnSkills.includes(skill));
-  //         const learnOverlap = matchLearnSkills.filter(skill => teachSkills.includes(skill));
-
-  //         const totalMySkills = teachSkills.length + learnSkills.length;
-  //         let matchScore = 0;
-  //         if (totalMySkills > 0) {
-  //           matchScore = Math.round(((teachOverlap.length + learnOverlap.length) / totalMySkills) * 100);
-  //         }
-
-  //         return { ...match, matchScore };
-  //       });
-
-  //       setMatches(matchesWithScore);
-
-  //     } catch (err: any) {
-  //       console.error("Error fetching matches:", err);
-  //       setError(err.message);
-  //       setMatches([]);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }
-
-  //   fetchAndSetMatches();
-
-  // }, [user]); // Re-run effect if user changes
-
-  // if (loading) {
-  //   return (
-  //      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#28243c] via-[#322c54] to-[#3b2f5e]">
-  //        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-  //      </div>
-  //    );
-  // }
-
-  // if (error) {
-  //   return <div className="min-h-screen flex items-center justify-center text-rose-400">Error loading matches: {error}</div>;
-  // }
-
-  // if (!user) {
-  //      return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Please log in to view matches.</div>;
-  // }
-
-  // Conditionally render based on whether mySkills has been loaded and if there are matches
-  //  if (mySkills && mySkills.teach.length === 0 && mySkills.learn.length === 0) {
-  //        return (
-  //             <div className="min-h-screen flex items-center justify-center text-muted-foreground">
-  //                <div className="text-center">
-  //                     <h2 className="text-2xl font-bold mb-4">Complete Your Profile!</h2>
-  //                     <p>Please add skills you can teach and want to learn to find matches.</p>
-  //                </div>
-  //            </div>
-  //        );
-  //   }
-
-  //  if (matches.length === 0 && mySkills && (mySkills.teach.length > 0 || mySkills.learn.length > 0)) {
-  //        return (
-  //            <div className="min-h-screen flex items-center justify-center text-muted-foreground">
-  //                <div className="text-center">
-  //                     <h2 className="text-2xl font-bold mb-4">No matches found... yet!</h2>
-  //                     <p>Try adding more skills to your profile to find people who can teach you or learn from you.</p>
-  //                </div>
-  //            </div>
-  //        );
-  //    }
+  // Send a new request
+  const handleSendRequest = async (person1_id, person2_id, skill) => {
+    const { error } = await supabase.from('requests').insert([
+      {
+        from_user: person1_id,
+        to_user: person2_id, // must be Person2's ID
+        skill,
+        status: 'pending'
+      }
+    ]);
+    if (error) {
+      console.error("Error sending request:", error);
+    } else {
+      console.log("Request sent successfully!");
+      // Optionally: update UI, show notification, etc.
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
       <main className="flex-1 container py-12">
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold mb-3">Your Skill Matches</h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Connect with people who have the skills you want to learn, and who want to learn what you already know.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {matchesData.map((match, index) => (
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">Incoming Skill Swap Requests</h2>
+          {requests.length === 0 && <p>No new requests.</p>}
+          {requests.map((req) => (
             <div
-              key={match.id}
-              className="animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
+              key={req.id}
+              className="bg-[#181828] rounded-xl p-6 mb-6 shadow-lg relative text-white max-w-lg"
             >
-              <MatchCard match={match} />
+              {/* Match Score Badge */}
+              <div className="absolute top-4 right-4 bg-[#6C47FF] text-white text-xs px-3 py-1 rounded-full font-semibold">
+                92% Match
+              </div>
+
+              {/* Avatar and Name */}
+              <div className="flex items-center gap-4 mb-2">
+                <div className="relative">
+                  <div className="bg-[#232336] rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold">
+                    {req.from_user?.full_name?.[0] || "A"}
+                  </div>
+                  {/* Status dot (optional) */}
+                  <span className="absolute bottom-1 right-1 h-3 w-3 rounded-full border-2 border-[#181828] bg-green-500"></span>
+                </div>
+                <div>
+                  <div className="text-lg font-semibold">{req.from_user?.full_name || "Unknown"}</div>
+                  <div className="text-xs text-gray-400">unknown</div>
+                </div>
+              </div>
+
+              {/* Skills to share */}
+              <div className="mt-4">
+                <div className="text-sm text-gray-400 mb-1">Skills to share:</div>
+                <div className="flex gap-2 flex-wrap">
+                  {(req.from_user?.skills_teach || []).map((skill) => (
+                    <span
+                      key={skill}
+                      className="bg-[#232336] text-[#B3B3C6] px-3 py-1 rounded-full text-xs font-medium"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Wants to learn */}
+              <div className="mt-3">
+                <div className="text-sm text-gray-400 mb-1">Wants to learn:</div>
+                <div className="flex gap-2 flex-wrap">
+                  {(req.from_user?.skills_learn || []).map((skill) => (
+                    <span
+                      key={skill}
+                      className="bg-[#232336] text-[#B3B3C6] px-3 py-1 rounded-full text-xs font-medium"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 mt-6">
+                <button className="flex-1 bg-[#232336] hover:bg-[#232346] text-white py-2 rounded-lg flex items-center justify-center gap-2 border border-[#232336]">
+                  <span>💬</span> Chat Now
+                </button>
+                <button className="flex-1 bg-[#232336] hover:bg-[#232346] text-white py-2 rounded-lg flex items-center justify-center gap-2 border border-[#232336]">
+                  <span>🎥</span> Video Chat
+                </button>
+              </div>
+              <div className="flex gap-6 mt-4 justify-end">
+                <button
+                  className="text-red-500 flex items-center gap-1 hover:underline"
+                  onClick={() => handleReject(req.id)}
+                >
+                  <span>✗</span> Ignore
+                </button>
+                <button
+                  className="text-green-400 flex items-center gap-1 hover:underline"
+                  onClick={() => handleAccept(req.id)}
+                >
+                  <span>✓</span> Accept
+                </button>
+              </div>
             </div>
           ))}
         </div>

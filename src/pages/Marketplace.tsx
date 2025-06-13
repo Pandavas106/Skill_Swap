@@ -35,6 +35,25 @@ const levels = ["All Levels", "Beginner", "Intermediate", "Advanced"];
 const modes = ["All Modes", "Online", "In-Person", "Both"];
 
 const SkillCard = ({ profile }) => {
+  const { user } = useAuth();
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleRequestSwap = async (skill) => {
+    setSending(true);
+    const { error } = await supabase.from('requests').insert([
+      {
+        from_user: user.id,
+        to_user: profile.id,
+        skill,
+        status: 'pending'
+      }
+    ]);
+    setSending(false);
+    if (!error) setSent(true);
+    // Optionally handle error
+  };
+
   return (
     <Card className="h-full hover:shadow-md transition-shadow">
       <CardHeader className="p-4 pb-0">
@@ -127,7 +146,13 @@ const SkillCard = ({ profile }) => {
             </div>
           </div>
           
-          <Button className="w-full mt-4">Request Swap</Button>
+          <Button
+            className="w-full mt-4"
+            disabled={sending || sent}
+            onClick={() => handleRequestSwap(profile.skills_teach[0])} // or let user pick skill
+          >
+            {sent ? "Request Sent" : sending ? "Sending..." : "Request Swap"}
+          </Button>
         </div>
       </CardContent>
     </Card>
