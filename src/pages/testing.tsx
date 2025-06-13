@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { GEMINI_API_KEY } from "./key";
+export const GEMINI_API_KEY = "your-gemini-api-key-here";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
