@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from 'sonner';
 
 // Sample data (will be replaced)
 const matchesData = [
@@ -265,31 +267,108 @@ const MatchCard = ({ match }: { match: {
 const Matches = () => {
   const { user } = useAuth();
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchRequests() {
       if (!user) return;
-      const { data, error } = await supabase
-        .from('requests')
-        .select('*, from_user(full_name, avatar_url)')
-        .eq('to_user', user.id)
-        .eq('status', 'pending');
-      setRequests(data || []);
+      
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const { data, error } = await supabase
+          .from('requests')
+          .select(`
+            *,
+            from_user:profiles!requests_from_user_fkey(
+              id,
+              full_name,
+              avatar_url,
+              skills_teach,
+              skills_learn
+            )
+          `)
+          .eq('to_user', user.id)
+          .eq('status', 'pending');
+        
+        if (error) throw error;
+        setRequests(data || []);
+      } catch (error) {
+        console.error('Error fetching requests:', error);
+        setError('Failed to load requests. Please try again.');
+        toast.error('Failed to load requests');
+      } finally {
+        setLoading(false);
+      }
     }
     fetchRequests();
   }, [user]);
 
   // Accept request
-  const handleAccept = async (id) => {
-    await supabase.from('requests').update({ status: 'accepted' }).eq('id', id);
-    setRequests(requests.filter(req => req.id !== id));
-    // Optionally: notify both users, create a match, etc.
+  const handleAccept = async (id, fromUserId) => {
+    try {
+      setLoading(true);
+      
+      // Start a transaction
+      const { error: updateError } = await supabase
+        .from('requests')
+        .update({ status: 'accepted' })
+        .eq('id', id);
+
+      if (updateError) throw updateError;
+
+      // Create chat connection
+      const { error: connectionError } = await supabase
+        .from('chat_connections')
+        .insert([
+          {
+            user1_id: user.id,
+            user2_id: fromUserId
+          }
+        ]);
+
+      if (connectionError) throw connectionError;
+
+      // Remove the request from the list
+      setRequests(requests.filter(req => req.id !== id));
+      
+      toast.success('Request accepted! Starting chat...');
+      
+      // Navigate to chat with the user
+      navigate(`/chat?user=${fromUserId}`);
+    } catch (error) {
+      console.error('Error accepting request:', error);
+      toast.error('Failed to accept request. Please try again.');
+      setError('Failed to accept request');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Reject request
   const handleReject = async (id) => {
-    await supabase.from('requests').update({ status: 'rejected' }).eq('id', id);
-    setRequests(requests.filter(req => req.id !== id));
+    try {
+      setLoading(true);
+      
+      const { error } = await supabase
+        .from('requests')
+        .update({ status: 'rejected' })
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      setRequests(requests.filter(req => req.id !== id));
+      toast.success('Request rejected');
+    } catch (error) {
+      console.error('Error rejecting request:', error);
+      toast.error('Failed to reject request. Please try again.');
+      setError('Failed to reject request');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Send a new request
@@ -316,87 +395,110 @@ const Matches = () => {
       <main className="flex-1 container py-12">
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Incoming Skill Swap Requests</h2>
-          {requests.length === 0 && <p>No new requests.</p>}
-          {requests.map((req) => (
-            <div
-              key={req.id}
-              className="bg-[#181828] rounded-xl p-6 mb-6 shadow-lg relative text-white max-w-lg"
-            >
-              {/* Match Score Badge */}
-              <div className="absolute top-4 right-4 bg-[#6C47FF] text-white text-xs px-3 py-1 rounded-full font-semibold">
-                92% Match
-              </div>
-
-              {/* Avatar and Name */}
-              <div className="flex items-center gap-4 mb-2">
-                <div className="relative">
-                  <div className="bg-[#232336] rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold">
-                    {req.from_user?.full_name?.[0] || "A"}
-                  </div>
-                  {/* Status dot (optional) */}
-                  <span className="absolute bottom-1 right-1 h-3 w-3 rounded-full border-2 border-[#181828] bg-green-500"></span>
-                </div>
-                <div>
-                  <div className="text-lg font-semibold">{req.from_user?.full_name || "Unknown"}</div>
-                  <div className="text-xs text-gray-400">unknown</div>
-                </div>
-              </div>
-
-              {/* Skills to share */}
-              <div className="mt-4">
-                <div className="text-sm text-gray-400 mb-1">Skills to share:</div>
-                <div className="flex gap-2 flex-wrap">
-                  {(req.from_user?.skills_teach || []).map((skill) => (
-                    <span
-                      key={skill}
-                      className="bg-[#232336] text-[#B3B3C6] px-3 py-1 rounded-full text-xs font-medium"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Wants to learn */}
-              <div className="mt-3">
-                <div className="text-sm text-gray-400 mb-1">Wants to learn:</div>
-                <div className="flex gap-2 flex-wrap">
-                  {(req.from_user?.skills_learn || []).map((skill) => (
-                    <span
-                      key={skill}
-                      className="bg-[#232336] text-[#B3B3C6] px-3 py-1 rounded-full text-xs font-medium"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 mt-6">
-                <button className="flex-1 bg-[#232336] hover:bg-[#232346] text-white py-2 rounded-lg flex items-center justify-center gap-2 border border-[#232336]">
-                  <span>💬</span> Chat Now
-                </button>
-                <button className="flex-1 bg-[#232336] hover:bg-[#232346] text-white py-2 rounded-lg flex items-center justify-center gap-2 border border-[#232336]">
-                  <span>🎥</span> Video Chat
-                </button>
-              </div>
-              <div className="flex gap-6 mt-4 justify-end">
-                <button
-                  className="text-red-500 flex items-center gap-1 hover:underline"
-                  onClick={() => handleReject(req.id)}
-                >
-                  <span>✗</span> Ignore
-                </button>
-                <button
-                  className="text-green-400 flex items-center gap-1 hover:underline"
-                  onClick={() => handleAccept(req.id)}
-                >
-                  <span>✓</span> Accept
-                </button>
-              </div>
+          
+          {error && (
+            <div className="bg-destructive/10 text-destructive p-4 rounded-lg mb-4">
+              {error}
             </div>
-          ))}
+          )}
+          
+          {loading ? (
+            <div className="flex justify-center items-center h-40">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : requests.length === 0 ? (
+            <p className="text-muted-foreground">No new requests.</p>
+          ) : (
+            requests.map((req) => (
+              <div
+                key={req.id}
+                className="bg-[#181828] rounded-xl p-6 mb-6 shadow-lg relative text-white max-w-lg"
+              >
+                {/* Match Score Badge */}
+                <div className="absolute top-4 right-4 bg-[#6C47FF] text-white text-xs px-3 py-1 rounded-full font-semibold">
+                  92% Match
+                </div>
+
+                {/* Avatar and Name */}
+                <div className="flex items-center gap-4 mb-2">
+                  <div className="relative">
+                    <div className="bg-[#232336] rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold">
+                      {req.from_user?.full_name?.[0] || "A"}
+                    </div>
+                    {/* Status dot (optional) */}
+                    <span className="absolute bottom-1 right-1 h-3 w-3 rounded-full border-2 border-[#181828] bg-green-500"></span>
+                  </div>
+                  <div>
+                    <div className="text-lg font-semibold">{req.from_user?.full_name || "Unknown"}</div>
+                    <div className="text-xs text-gray-400">unknown</div>
+                  </div>
+                </div>
+
+                {/* Skills to share */}
+                <div className="mt-4">
+                  <div className="text-sm text-gray-400 mb-1">Skills to share:</div>
+                  <div className="flex gap-2 flex-wrap">
+                    {(req.from_user?.skills_teach || []).map((skill) => (
+                      <span
+                        key={skill}
+                        className="bg-[#232336] text-[#B3B3C6] px-3 py-1 rounded-full text-xs font-medium"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Wants to learn */}
+                <div className="mt-3">
+                  <div className="text-sm text-gray-400 mb-1">Wants to learn:</div>
+                  <div className="flex gap-2 flex-wrap">
+                    {(req.from_user?.skills_learn || []).map((skill) => (
+                      <span
+                        key={skill}
+                        className="bg-[#232336] text-[#B3B3C6] px-3 py-1 rounded-full text-xs font-medium"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 mt-6">
+                  <button 
+                    className="flex-1 bg-[#232336] hover:bg-[#232346] text-white py-2 rounded-lg flex items-center justify-center gap-2 border border-[#232336] disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => navigate(`/chat?user=${req.from_user.id}`)}
+                    disabled={loading}
+                  >
+                    <span>💬</span> Chat Now
+                  </button>
+                  <button 
+                    className="flex-1 bg-[#232336] hover:bg-[#232346] text-white py-2 rounded-lg flex items-center justify-center gap-2 border border-[#232336] disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={loading}
+                  >
+                    <span>🎥</span> Video Chat
+                  </button>
+                </div>
+                <div className="flex gap-6 mt-4 justify-end">
+                  <button
+                    className="text-red-500 flex items-center gap-1 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => handleReject(req.id)}
+                    disabled={loading}
+                  >
+                    <span>✗</span> Ignore
+                  </button>
+                  <button
+                    className="text-green-400 flex items-center gap-1 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => handleAccept(req.id, req.from_user.id)}
+                    disabled={loading}
+                  >
+                    <span>✓</span> Accept
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </main>
       <Footer />
