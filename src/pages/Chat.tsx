@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 // Import the components
 import ChatSidebar from '@/components/Chat/ChatSidebar';
 import ChatMessages from '@/components/Chat/ChatMessages';
 import SkillProfileSidebar from '@/components/Chat/SkillProfileSidebar';
 
+interface SelectedUser {
+  id: string;
+  full_name: string;
+  avatar_url: string | null;
+}
+
 const Chat = () => {
+  const [selectedUser, setSelectedUser] = useState<SelectedUser | null>(null);
+
   return (
     // Main container: Use flex column to stack Navbar above content, then flex row for content
     // Use h-screen and pt-[70px] to push content below fixed Navbar and take full viewport height.
@@ -20,17 +28,20 @@ const Chat = () => {
       <div className="flex flex-1 pt-[70px]">
         {/* Left Sidebar - Adjusted width for better visibility */}
         <div className="w-1/4 min-w-[250px] max-w-[350px] bg-white dark:bg-background border-r border-border/40 overflow-y-auto flex flex-col">
-          <ChatSidebar />
+          <ChatSidebar 
+            onSelectUser={setSelectedUser}
+            selectedUserId={selectedUser?.id}
+          />
         </div>
 
         {/* Center Chat Area - Ensured it takes remaining space */}
         <div className="flex-1 flex flex-col bg-white dark:bg-background">
-          <ChatMessages />
+          <ChatMessages selectedUser={selectedUser} />
         </div>
 
         {/* Right Sidebar - Adjusted width for better visibility and ensured scrolling */}
         <div className="w-1/5 min-w-[200px] max-w-[300px] bg-white dark:bg-background border-l border-border/40 overflow-y-auto flex flex-col">
-          <SkillProfileSidebar />
+          <SkillProfileSidebar selectedUser={selectedUser} />
         </div>
       </div>
     </div>
