@@ -1,8 +1,14 @@
-import React, { useState } from 'react';
-// Import the components
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import ChatSidebar from '@/components/Chat/ChatSidebar';
 import ChatMessages from '@/components/Chat/ChatMessages';
 import SkillProfileSidebar from '@/components/Chat/SkillProfileSidebar';
+import { cn } from '@/lib/utils';
 
 interface SelectedUser {
   id: string;
@@ -11,41 +17,173 @@ interface SelectedUser {
 }
 
 const Chat = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedUser, setSelectedUser] = useState<SelectedUser | null>(null);
+  const [chatConnectionId, setChatConnectionId] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isProfileOpen, setIsProfileOpen] = useState(true);
+  
+  // Handle responsive layout
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+  const isTablet = typeof window !== 'undefined' ? window.innerWidth <= 1024 : false;
+
+  useEffect(() => {
+    setIsSidebarOpen(!isMobile);
+    setIsProfileOpen(!isTablet);
+  }, [isMobile, isTablet]);
+  useEffect(() => {
+    const initializeChat = async () => {
+      try {
+        if (user && selectedUser) {
+          await loadChatConnection();
+        } else {
+          setChatConnectionId(null);
+        }
+      } catch (error) {
+        console.error('Error initializing chat:', error);
+        // Handle the error appropriately
+      }
+    };
+
+    initializeChat();
+  }, [user, selectedUser]);
+
+  const loadChatConnection = async () => {
+    if (!user || !selectedUser) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('chat_connections')
+        .select('id')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .or(`user1_id.eq.${selectedUser.id},user2_id.eq.${selectedUser.id}`)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+
+      if (data) {
+        setChatConnectionId(data.id);
+      } else {
+        const { data: newConnection, error: createError } = await supabase
+          .from('chat_connections')
+          .insert({
+            user1_id: user.id,
+            user2_id: selectedUser.id
+          })
+          .select('id')
+          .single();
+
+        if (createError) throw createError;
+        setChatConnectionId(newConnection.id);
+      }
+    } catch (error) {
+      console.error('Error managing chat connection:', error);
+    }
+  };
 
   return (
-    // Main container: Use flex column to stack Navbar above content, then flex row for content
-    // Use h-screen and pt-[70px] to push content below fixed Navbar and take full viewport height.
-    // The actual Navbar is fixed, so its height needs to be accounted for by padding/margin on the main content.
-    <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900 text-foreground">
-      {/* Placeholder for the fixed Navbar space - REMOVED, handled by padding on content below */}
-      {/* <div className="h-[70px] w-full flex-shrink-0"></div> */}
+    <div className="h-screen flex flex-col bg-background">
+      {/* Header */}
+      <header className="h-14 flex-none border-b border-border flex items-center justify-between px-4">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
+        {selectedUser && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{selectedUser.full_name}</span>
+            {isTablet && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
+        )}
+      </header>
 
-      {/* Content area below Navbar: flex row to arrange sidebars and chat */}
-      {/* Use flex-1 to make this container fill the remaining height */}
-      {/* Add top padding to push content below fixed navbar */}
-      {/* Removed overflow-hidden and h-full from this container and its children for now */}
-      <div className="flex flex-1 pt-[70px]">
-        {/* Left Sidebar - Adjusted width for better visibility */}
-        <div className="w-1/4 min-w-[250px] max-w-[350px] bg-white dark:bg-background border-r border-border/40 overflow-y-auto flex flex-col">
-          <ChatSidebar 
-            onSelectUser={setSelectedUser}
-            selectedUserId={selectedUser?.id}
+      {/* Main Content */}
+      <div className="flex-1 flex min-h-0">
+        {/* Left Sidebar */}
+        <aside
+          className={cn(
+            "w-60 border-r border-border",
+            "transition-transform duration-200 ease-in-out lg:translate-x-0",
+            isMobile ? "fixed inset-y-14 left-0 z-40 bg-background" : "relative",
+            !isSidebarOpen && "-translate-x-full"
+          )}
+        >
+          <ScrollArea className="h-full">
+            <div className="p-4">
+              <ChatSidebar 
+                onSelectUser={(user) => {
+                  setSelectedUser(user);
+                  if (isMobile) setIsSidebarOpen(false);
+                }}
+                selectedUserId={selectedUser?.id}
+              />
+            </div>
+          </ScrollArea>
+        </aside>
+
+        {/* Chat Area */}
+        <main className="flex-1 min-w-0 bg-background">
+          <ChatMessages
+            selectedUser={selectedUser}
+            chatConnectionId={chatConnectionId}
           />
-        </div>
+        </main>
 
-        {/* Center Chat Area - Ensured it takes remaining space */}
-        <div className="flex-1 flex flex-col bg-white dark:bg-background">
-          <ChatMessages selectedUser={selectedUser} />
-        </div>
+        {/* Right Sidebar */}
+        <aside
+          className={cn(
+            "w-80 border-l border-border",
+            "transition-transform duration-200 ease-in-out lg:translate-x-0",
+            isTablet ? "fixed inset-y-14 right-0 z-40 bg-background" : "relative",
+            !isProfileOpen && "translate-x-full"
+          )}
+        >
+          <ScrollArea className="h-full">
+            <div className="p-4">
+              <SkillProfileSidebar
+                selectedUser={selectedUser}
+                chatConnectionId={chatConnectionId}
+              />
+            </div>
+          </ScrollArea>
+        </aside>
 
-        {/* Right Sidebar - Adjusted width for better visibility and ensured scrolling */}
-        <div className="w-1/5 min-w-[200px] max-w-[300px] bg-white dark:bg-background border-l border-border/40 overflow-y-auto flex flex-col">
-          <SkillProfileSidebar selectedUser={selectedUser} />
-        </div>
+        {/* Mobile/Tablet Backdrop */}
+        {(isMobile || isTablet) && (isSidebarOpen || isProfileOpen) && (
+          <div
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30"
+            onClick={() => {
+              setIsSidebarOpen(false);
+              setIsProfileOpen(false);
+            }}
+          />
+        )}
       </div>
     </div>
   );
 };
 
-export default Chat; 
+export default Chat;

@@ -1,3 +1,5 @@
+import { PostgrestError } from '@supabase/supabase-js';
+
 export type Json =
   | string
   | number
@@ -53,6 +55,186 @@ export interface Database {
           updated_at?: string
         }
       }
+      chat_connections: {
+        Row: {
+          id: string
+          user1_id: string
+          user2_id: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user1_id: string
+          user2_id: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user1_id?: string
+          user2_id?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      messages: {
+        Row: {
+          id: string
+          sender_id: string
+          receiver_id: string
+          content: string
+          timestamp: string
+          created_at: string
+          message_type: MessageType
+          file_url?: string
+          file_name?: string
+        }
+        Insert: {
+          id?: string
+          sender_id: string
+          receiver_id: string
+          content: string
+          timestamp?: string
+          created_at?: string
+          message_type?: MessageType
+          file_url?: string
+          file_name?: string
+        }
+        Update: {
+          id?: string
+          sender_id?: string
+          receiver_id?: string
+          content?: string
+          timestamp?: string
+          created_at?: string
+          message_type?: MessageType
+          file_url?: string
+          file_name?: string
+        }
+      }
+      shared_resources: {
+        Row: {
+          id: string
+          chat_connection_id: string
+          title: string
+          url: string
+          description: string | null
+          created_at: string
+          created_by: string
+        }
+        Insert: {
+          id?: string
+          chat_connection_id: string
+          title: string
+          url: string
+          description?: string | null
+          created_at?: string
+          created_by: string
+        }
+        Update: {
+          id?: string
+          chat_connection_id?: string
+          title?: string
+          url?: string
+          description?: string | null
+          created_at?: string
+          created_by?: string
+        }
+      }
+      shared_tasks: {
+        Row: {
+          id: string
+          chat_connection_id: string
+          title: string
+          description: string | null
+          due_date: string | null
+          completed: boolean
+          created_at: string
+          created_by: string
+        }
+        Insert: {
+          id?: string
+          chat_connection_id: string
+          title: string
+          description?: string | null
+          due_date?: string | null
+          completed?: boolean
+          created_at?: string
+          created_by: string
+        }
+        Update: {
+          id?: string
+          chat_connection_id?: string
+          title?: string
+          description?: string | null
+          due_date?: string | null
+          completed?: boolean
+          created_at?: string
+          created_by?: string
+        }
+      }
+      teaching_sessions: {
+        Row: {
+          id: string
+          chat_connection_id: string
+          scheduled_at: string
+          duration: number
+          title: string
+          description: string | null
+          meeting_link: string | null
+          created_at: string
+          created_by: string
+        }
+        Insert: {
+          id?: string
+          chat_connection_id: string
+          scheduled_at: string
+          duration: number
+          title: string
+          description?: string | null
+          meeting_link?: string | null
+          created_at?: string
+          created_by: string
+        }
+        Update: {
+          id?: string
+          chat_connection_id?: string
+          scheduled_at?: string
+          duration?: number
+          title?: string
+          description?: string | null
+          meeting_link?: string | null
+          created_at?: string
+          created_by?: string
+        }
+      }
+      availability_slots: {
+        Row: {
+          id: string
+          profile_id: string
+          day_of_week: number
+          start_time: string
+          end_time: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          day_of_week: number
+          start_time: string
+          end_time: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          day_of_week?: number
+          start_time?: string
+          end_time?: string
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -80,7 +262,7 @@ export type Tables<
   }
     ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
   ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
@@ -98,84 +280,16 @@ export type Tables<
       : never
     : never
 
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
+export type DbResult<T> = T extends PromiseLike<infer U> ? U : never
+export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never
+export type DbResultErr = PostgrestError
 
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
+export type Profile = Database['public']['Tables']['profiles']['Row']
+export type ChatConnection = Database['public']['Tables']['chat_connections']['Row']
+export type Message = Database['public']['Tables']['messages']['Row']
+export type SharedResource = Database['public']['Tables']['shared_resources']['Row']
+export type SharedTask = Database['public']['Tables']['shared_tasks']['Row']
+export type TeachingSession = Database['public']['Tables']['teaching_sessions']['Row']
+export type AvailabilitySlot = Database['public']['Tables']['availability_slots']['Row']
 
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {},
-  },
-} as const
+export type MessageType = 'text' | 'file' | 'image' | 'emoji';

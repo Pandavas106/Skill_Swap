@@ -347,24 +347,57 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#28243c] via-[#322c54] to-[#3b2f5e] p-4">
-      {/* Floating/Sticky Progress Bar */}
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl flex justify-center pointer-events-none">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#28243c] via-[#322c54] to-[#3b2f5e] p-4 relative">
+      {/* Enhanced Back to Home Button with animations and effects */}
+      <button
+        onClick={() => navigate('/')}
+        className="group absolute top-4 left-4 flex items-center gap-3 px-5 py-2.5 rounded-xl
+          bg-white/5 backdrop-blur-md border border-white/10
+          hover:bg-white/10 hover:border-white/20 hover:scale-105
+          active:scale-95
+          transition-all duration-300 ease-out
+          shadow-[0_0_20px_rgba(109,40,217,0.2)] hover:shadow-[0_0_25px_rgba(109,40,217,0.3)]
+          z-50"
+      >
+        <span className="relative flex items-center justify-center w-6 h-6">
+          <span className="absolute inline-flex h-full w-full rounded-full bg-primary/20 group-hover:bg-primary/30 transition-all duration-300"></span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-primary relative transform -translate-x-0.5 group-hover:-translate-x-1 transition-transform duration-300"
+          >
+            <path d="m12 19-7-7 7-7" />
+            <path d="M19 12H5" className="group-hover:opacity-70 transition-opacity duration-300" />
+          </svg>
+        </span>
+        <span className="font-medium bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent
+          text-sm sm:text-base whitespace-nowrap">
+          Back to Home
+        </span>
+        <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/20 to-purple-500/20 opacity-0 
+          group-hover:opacity-100 blur transition-opacity duration-300 -z-10"></span>
+      </button>
+
+      {/* Progress Bar - Adjusted position and z-index */}
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-xl flex justify-center pointer-events-none">
         <div className="relative w-full max-w-md">
-          {/* Track */}
           <div className="absolute inset-0 h-full rounded-full bg-white/20 dark:bg-[#6d28d9]/20 backdrop-blur-md" />
-          {/* Progress fill */}
           <motion.div
             className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 shadow-md"
             initial={{ width: 0 }}
             animate={{ width: `${completionInfo.percent}%` }}
             transition={{ duration: 0.6, type: "spring" }}
-            style={{ zIndex: 1 }}
           />
-          {/* Content */}
-          <div className="relative z-10 flex items-center justify-center h-full w-full px-6 py-2">
+          <div className="relative flex items-center justify-center h-full w-full px-6 py-2">
             <span className="text-white font-semibold text-base flex items-center gap-2">
-              Profile Completion: {completionInfo.percent}% {completionInfo.percent >= 80 ? "✅" : ""}
+              Profile Completion: {completionInfo.percent}% {completionInfo.percent >= 80 && "✅"}
               <div className="relative group pointer-events-auto">
                 <InfoIcon className="h-4 w-4 text-white/80 cursor-pointer ml-1" />
                 <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 bg-[#232136] text-white text-xs rounded-xl shadow-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity z-50 border border-indigo-700">
@@ -386,16 +419,11 @@ export default function Profile() {
           </div>
         </div>
       </div>
-      {/* Go Back to Home Button */}
-      <button
-        className="fixed bottom-4 right-4 px-6 py-3 rounded-full bg-white/20 text-white font-semibold backdrop-blur-md shadow-lg hover:bg-white/30 transition-colors z-40"
-        onClick={() => navigate('/')}
-      >
-        ← Go back to Home
-      </button>
-      <div className="w-full max-w-xl bg-[#232136]/80 backdrop-blur-md rounded-3xl shadow-2xl p-0 flex flex-col items-center border border-indigo-900 mt-24">
+
+      {/* Main Content - Adjusted margin top */}
+      <div className="w-full max-w-xl bg-[#232136]/80 backdrop-blur-md rounded-3xl shadow-2xl p-0 flex flex-col items-center border border-indigo-900 mt-32">
         {/* Profile Picture */}
-        <div className="relative flex flex-col items-center -mt-12 mb-2 z-10">
+        <div className="relative flex flex-col items-center -mt-12 mb-2">
           <label htmlFor="profilePic" className="cursor-pointer group">
             <div className="relative h-28 w-28 rounded-full overflow-hidden border-4 border-indigo-600 shadow-lg bg-[#232136] flex items-center justify-center">
               <img
@@ -758,4 +786,4 @@ export default function Profile() {
       )}
     </div>
   );
-} 
+}

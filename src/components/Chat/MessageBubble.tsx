@@ -1,14 +1,7 @@
 import React from 'react';
+import { FileIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface Message {
-  id: string;
-  sender_id: string;
-  receiver_id: string;
-  content: string;
-  timestamp: string;
-  created_at: string;
-}
+import { Message } from '@/integrations/supabase/types';
 
 interface MessageBubbleProps {
   message: Message;
@@ -21,33 +14,70 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage }) 
     minute: '2-digit'
   });
 
+  const renderMessageContent = () => {
+    switch (message.message_type) {
+      case 'image':
+        return (
+          <div className="flex flex-col gap-1">
+            <img
+              src={message.file_url}
+              alt={message.file_name || 'Shared image'}
+              className="rounded-lg max-w-[300px] max-h-[300px] object-contain bg-accent"
+              loading="lazy"
+            />
+            <p className="text-xs opacity-70 mt-1">{message.content}</p>
+          </div>
+        );
+      case 'file':
+        return (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-sm">
+              <FileIcon className="h-4 w-4" />
+              <a
+                href={message.file_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline truncate max-w-[300px]"
+                download={message.file_name}
+              >
+                {message.file_name || 'Download file'}
+              </a>
+            </div>
+            <p className="text-xs opacity-70">{message.content}</p>
+          </div>
+        );      default:
+        return (
+          <p className="whitespace-pre-wrap break-words" style={{ 
+            fontFamily: "'Segoe UI Emoji', 'Noto Color Emoji', 'Apple Color Emoji', system-ui, -apple-system, sans-serif",
+            fontSize: '1rem',
+            lineHeight: '1.5'
+          }}>
+            {message.content}
+          </p>
+        );
+    }
+  };
+
   return (
     <div
       className={cn(
-        'flex w-full',
+        'flex gap-2',
         isOwnMessage ? 'justify-end' : 'justify-start'
       )}
     >
       <div
         className={cn(
-          'max-w-[70%] rounded-2xl px-4 py-2',
+          'max-w-[70%] rounded-lg px-4 py-2',
+          message.message_type === 'image' ? 'p-2' : 'px-4 py-2',
           isOwnMessage
-            ? 'bg-primary text-primary-foreground rounded-br-none'
-            : 'bg-accent/30 text-foreground rounded-bl-none'
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-accent'
         )}
       >
-        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-        <div
-          className={cn(
-            'text-xs mt-1',
-            isOwnMessage ? 'text-primary-foreground/70' : 'text-muted-foreground'
-          )}
-        >
-          {formattedTime}
-        </div>
+        {renderMessageContent()}
       </div>
     </div>
   );
 };
 
-export default MessageBubble; 
+export default MessageBubble;
