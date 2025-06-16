@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
 
@@ -370,4 +369,63 @@
   .glass-card {
     @apply backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg;
   }
+  
+  .bg-dot-pattern {
+    background-image: radial-gradient(
+      circle at center,
+      hsl(var(--foreground) / 0.05) 0.5px,
+      transparent 0.5px
+    );
+    background-size: 24px 24px;
+  }
+
+  /* Hover effect utilities */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-0.5 hover:shadow-lg;
+  }
+
+  /* Premium gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-blue-500;
+  }
+
+  /* Glass effect */
+  .glass-effect {
+    @apply bg-background/60 backdrop-blur-xl border border-border/40 shadow-sm;
+  }
+
+  /* Premium card effect */
+  .premium-card {
+    @apply rounded-xl border border-border/40 bg-gradient-to-br from-background/95 to-background shadow-xl;
+  }
+}
+
+/* Emoji Picker Dark Mode Overrides */
+[data-theme='dark'] .emoji-mart {
+  --em-rgb-background: 17 17 17;
+  --em-rgb-color: 229 229 229;
+  --em-rgb-input: 30 30 30;
+}
+
+[data-theme='dark'] .emoji-mart {
+  background-color: hsl(var(--background));
+  border-color: hsl(var(--border));
+}
+
+[data-theme='dark'] .emoji-mart button {
+  color: hsl(var(--foreground));
+}
+
+[data-theme='dark'] .emoji-mart-category-label {
+  background-color: hsl(var(--background));
+  color: hsl(var(--muted-foreground));
+}
+
+[data-theme='dark'] .emoji-mart-emoji:hover::before {
+  background-color: hsl(var(--accent));
+}
+
+/* Emoji Picker Animations */
+.emoji-mart {
+  @apply animate-in fade-in zoom-in-95 duration-200;
 }
