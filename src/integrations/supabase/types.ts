@@ -292,4 +292,16 @@ export type SharedTask = Database['public']['Tables']['shared_tasks']['Row']
 export type TeachingSession = Database['public']['Tables']['teaching_sessions']['Row']
 export type AvailabilitySlot = Database['public']['Tables']['availability_slots']['Row']
 
-export type MessageType = 'text' | 'file' | 'image' | 'emoji';
+export type MessageType = 'text' | 'file' | 'image' | 'emoji' | 'audio';
+
+export interface MessageDetails {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  message_type: MessageType;
+  created_at: string;
+  timestamp: string;
+  file_url?: string | null;
+  file_name?: string | null;
+}

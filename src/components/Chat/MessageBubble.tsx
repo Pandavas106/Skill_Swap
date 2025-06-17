@@ -45,7 +45,28 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage }) 
             </div>
             <p className="text-xs opacity-70">{message.content}</p>
           </div>
-        );      default:
+        );      case 'audio':
+        return (          <div className="flex flex-col gap-2">
+            <div className="bg-secondary/20 rounded-lg p-2">
+              <audio 
+                controls 
+                src={message.file_url}
+                className="max-w-[300px] w-full"
+                preload="metadata"
+                controlsList="nodownload"
+              >
+                <a href={message.file_url} target="_blank" rel="noopener noreferrer">
+                  Download audio
+                </a>
+              </audio>
+            </div>
+            <p className="text-xs opacity-70">
+              {message.content} 
+              {message.file_name && <span className="ml-1">({message.file_name})</span>}
+            </p>
+          </div>
+        );
+      default:
         return (
           <p className="whitespace-pre-wrap break-words" style={{ 
             fontFamily: "'Segoe UI Emoji', 'Noto Color Emoji', 'Apple Color Emoji', system-ui, -apple-system, sans-serif",

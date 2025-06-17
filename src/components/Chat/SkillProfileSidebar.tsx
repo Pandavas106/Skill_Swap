@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bookmark, FileText, Link as LinkIcon, Square, CheckSquare, Brain, Pin, ListTodo, CalendarDays, User, Star, Clock, Plus, ExternalLink, Calendar, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Square, CheckSquare, Brain, Pin, ListTodo, CalendarDays, User, Star, Clock, Plus, ExternalLink, Calendar, ChevronDown, ChevronUp, X, Link as LinkIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -125,17 +125,19 @@ const SkillProfileSidebar: React.FC<SkillProfileSidebarProps> = ({ selectedUser,
   const loadNextSession = async () => {
     if (!chatConnectionId) return;
 
-    try {
-      const { data, error } = await supabase
+    try {      const { data, error } = await supabase
         .from('teaching_sessions')
         .select('*')
         .eq('chat_connection_id', chatConnectionId)
         .gte('scheduled_at', new Date().toISOString())
         .order('scheduled_at', { ascending: true })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 is the code for no rows returned
+      if (error) {
+        console.error('Teaching sessions error:', error);
+        throw error;
+      }
       setNextSession(data || null);
     } catch (error) {
       console.error('Error loading next session:', error);

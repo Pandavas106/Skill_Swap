@@ -15,7 +15,7 @@ interface ChatMessagesProps {
   chatConnectionId: string | null;
 }
 
-export default function ChatMessages({ selectedUser, chatConnectionId }: ChatMessagesProps) {
+export default function ChatMessages({ selectedUser }: Readonly<ChatMessagesProps>) {
   const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, loading, sendMessage } = useMessages(user?.id || '', selectedUser?.id || '');
@@ -81,29 +81,37 @@ export default function ChatMessages({ selectedUser, chatConnectionId }: ChatMes
       )}
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4">
-        {loading ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
-          </div>
-        ) : messages.length > 0 ? (
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                isOwnMessage={message.sender_id === user?.id}
-              />
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <p className="text-muted-foreground">No messages yet</p>
-            <p className="text-sm text-muted-foreground">Start a conversation!</p>
-          </div>
-        )}
-      </div>
+      {(() => {
+        let messagesContent;
+        if (loading) {
+          messagesContent = (
+            <div className="flex justify-center items-center h-full">
+              <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+            </div>
+          );
+        } else if (messages.length > 0) {
+          messagesContent = (
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <MessageBubble
+                  key={message.id}
+                  message={message}
+                  isOwnMessage={message.sender_id === user?.id}
+                />
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          );
+        } else {
+          messagesContent = (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <p className="text-muted-foreground">No messages yet</p>
+              <p className="text-sm text-muted-foreground">Start a conversation!</p>
+            </div>
+          );
+        }
+        return <div className="flex-1 overflow-y-auto p-4">{messagesContent}</div>;
+      })()}
 
       {/* Chat Input */}
       <ChatInputBar
