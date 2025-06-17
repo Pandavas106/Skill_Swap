@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Menu } from 'lucide-react';
+import { ArrowLeft, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,7 +22,7 @@ const Chat = () => {
   const [selectedUser, setSelectedUser] = useState<SelectedUser | null>(null);
   const [chatConnectionId, setChatConnectionId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isProfileOpen, setIsProfileOpen] = useState(true);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   
   // Handle responsive layout
   const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
@@ -30,8 +30,12 @@ const Chat = () => {
 
   useEffect(() => {
     setIsSidebarOpen(!isMobile);
-    setIsProfileOpen(!isTablet);
+    // Don't auto-hide profile on tablet, let user control it
+    if (isMobile) {
+      setIsProfileOpen(false);
+    }
   }, [isMobile, isTablet]);
+
   useEffect(() => {
     const initializeChat = async () => {
       try {
@@ -83,105 +87,58 @@ const Chat = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="h-14 flex-none border-b border-border flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/')}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          {isMobile && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          )}
+    <div className="h-screen w-screen flex flex-row bg-background overflow-hidden">
+      {/* Left Sidebar */}
+      <aside className={cn(
+        "w-[240px] h-full border-r border-border flex-shrink-0 bg-white/50 dark:bg-accent/5",
+        "transition-all duration-300 ease-in-out",
+        isMobile && !isSidebarOpen && "-translate-x-full"
+      )}>
+        <div className="h-full p-4">
+          <ChatSidebar 
+            onSelectUser={(user) => {
+              setSelectedUser(user);
+              if (isMobile) setIsSidebarOpen(false);
+            }}
+            selectedUserId={selectedUser?.id}
+          />
         </div>
-        {selectedUser && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{selectedUser.full_name}</span>
-            {isTablet && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            )}
-          </div>
-        )}
-      </header>
+      </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex min-h-0">
-        {/* Left Sidebar */}
-        <aside
-          className={cn(
-            "w-60 border-r border-border",
-            "transition-transform duration-200 ease-in-out lg:translate-x-0",
-            isMobile ? "fixed inset-y-14 left-0 z-40 bg-background" : "relative",
-            !isSidebarOpen && "-translate-x-full"
-          )}
-        >
-          <ScrollArea className="h-full">
-            <div className="p-4">
-              <ChatSidebar 
-                onSelectUser={(user) => {
-                  setSelectedUser(user);
-                  if (isMobile) setIsSidebarOpen(false);
-                }}
-                selectedUserId={selectedUser?.id}
-              />
-            </div>
-          </ScrollArea>
-        </aside>
+      {/* Center Chat Area */}
+      <main className={cn(
+        "flex-1 flex flex-col min-w-0 h-full bg-background/80",
+        "transition-all duration-300 ease-in-out",
+        isProfileOpen && "lg:w-1/2"
+      )}>
+        <ChatMessages
+          selectedUser={selectedUser}
+          chatConnectionId={chatConnectionId}
+          isProfileOpen={isProfileOpen}
+          onToggleProfile={() => setIsProfileOpen(!isProfileOpen)}
+        />
+      </main>
 
-        {/* Chat Area */}
-        <main className="flex-1 min-w-0 bg-background">
-          <ChatMessages
+      {/* Right Sidebar - Skill Profile */}
+      <aside className={cn(
+        "w-[240px] lg:w-1/2 h-full border-l border-border flex-shrink-0 bg-white/50 dark:bg-accent/5",
+        "transition-all duration-300 ease-in-out",
+        "fixed lg:relative right-0 top-0",
+        isProfileOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0 lg:w-0 lg:opacity-0 lg:pointer-events-none"
+      )}>
+        <div className="h-full p-4 relative">
+          <button
+            onClick={() => setIsProfileOpen(false)}
+            className="absolute top-4 right-4 p-2 rounded-full hover:bg-accent/50 transition-colors"
+          >
+            <X className="h-5 w-5 text-muted-foreground" />
+          </button>
+          <SkillProfileSidebar
             selectedUser={selectedUser}
             chatConnectionId={chatConnectionId}
           />
-        </main>
-
-        {/* Right Sidebar */}
-        <aside
-          className={cn(
-            "w-80 border-l border-border",
-            "transition-transform duration-200 ease-in-out lg:translate-x-0",
-            isTablet ? "fixed inset-y-14 right-0 z-40 bg-background" : "relative",
-            !isProfileOpen && "translate-x-full"
-          )}
-        >
-          <ScrollArea className="h-full">
-            <div className="p-4">
-              <SkillProfileSidebar
-                selectedUser={selectedUser}
-                chatConnectionId={chatConnectionId}
-              />
-            </div>
-          </ScrollArea>
-        </aside>
-
-        {/* Mobile/Tablet Backdrop */}
-        {(isMobile || isTablet) && (isSidebarOpen || isProfileOpen) && (
-          <div
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30"
-            onClick={() => {
-              setIsSidebarOpen(false);
-              setIsProfileOpen(false);
-            }}
-          />
-        )}
-      </div>
+        </div>
+      </aside>
     </div>
   );
 };

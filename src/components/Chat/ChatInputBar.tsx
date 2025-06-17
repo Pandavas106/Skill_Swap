@@ -280,11 +280,11 @@ function ChatInputBar({
   const [recordingError, setRecordingError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
-  const emojiButtonRef = useRef<HTMLButtonElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
 
   // File upload logic
-  const { handleFileSelect, handleImageSelect } = useFileUpload(
+  const { handleFileUpload, handleFileSelect, handleImageSelect } = useFileUpload(
     onSendMessage, setIsUploading, fileInputRef, imageInputRef, disabled
   );
 
@@ -301,8 +301,8 @@ function ChatInputBar({
     function handleClickOutside(event: MouseEvent) {
       if (
         showEmojiPicker &&
-        emojiButtonRef.current &&
-        !emojiButtonRef.current.contains(event.target as Node) &&
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target as Node) &&
         // Check if the click is not inside the emoji picker
         !(event.target as Element)?.closest('.emoji-mart')
       ) {
@@ -312,7 +312,9 @@ function ChatInputBar({
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showEmojiPicker]);  const handleSubmit = async (e: React.FormEvent) => {
+  }, [showEmojiPicker]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() || disabled || isSending) return;
     try {
@@ -330,180 +332,111 @@ function ChatInputBar({
   };
 
   return (
-    <div className="relative border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4">
-      {/* Emoji Picker */}
-      {showEmojiPicker && (
-        <div className="absolute bottom-full right-4 mb-2">
-          <div className="rounded-lg shadow-lg">            <div className="emoji-mart">
-              <Picker
-                data={data}
-                onEmojiSelect={handleEmojiSelect}
-                theme={theme === 'dark' ? 'dark' : 'light'}
-                set="native"
-                autoFocus={true}
-                emojiSize={22}
-                emojiButtonSize={30}
-                maxFrequentRows={0}
-                previewPosition="none"
-                skinTonePosition="none"
-                navPosition="bottom"
-                perLine={8}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="flex items-center gap-3">
-        {/* Hidden file inputs */}
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileSelect}
-          className="hidden"
-          accept="*/*"
-        />
-        <input
-          type="file"
-          ref={imageInputRef}
-          onChange={handleImageSelect}
-          className="hidden"
-          accept="image/*"
-        />
-
-        {/* Attachment button */}        <button 
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={disabled || isUploading || isRecording}
-          className={cn(
-            "p-2 rounded-full transition-colors",
-            disabled || isUploading || isRecording
-              ? "text-muted-foreground cursor-not-allowed opacity-50"
-              : "hover:bg-accent text-muted-foreground hover:text-foreground"
-          )}
-          title={isUploading ? "Uploading..." : "Attach file"}
-        >
-          <Paperclip className="h-5 w-5" />
-        </button>
-
-        {/* Audio recording button */}
-        <button
-          type="button"
-          onClick={isRecording ? stopRecording : startRecording}
-          disabled={disabled || isUploading}
-          className={cn(
-            "p-2 rounded-full transition-colors relative",
-            isRecording 
-              ? "bg-red-500/10 text-red-500 hover:bg-red-500/20" 
-              : disabled || isUploading
-                ? "text-muted-foreground cursor-not-allowed opacity-50"
-                : "hover:bg-accent text-muted-foreground hover:text-foreground"
-          )}
-          title={isRecording ? "Stop recording" : "Record voice message"}
-        >
-          <Mic className={cn("h-5 w-5", isRecording && "animate-pulse")} />          {(isRecording || isUploading || recordingError) && (
-            <span className={cn(
-              "absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs py-1 px-2 rounded whitespace-nowrap",
-              {
-                "bg-red-500 text-white": isRecording,
-                "bg-blue-500 text-white": isUploading,
-                "bg-red-100 text-red-600": recordingError
-              }
-            )}>
-              {isRecording ? "Recording..." : 
-               isUploading ? "Uploading..." :
-               recordingError}
-            </span>
-          )}
-        </button>
-
-        {/* Image upload button */}
-        <button 
-          type="button"
-          onClick={() => imageInputRef.current?.click()}
-          disabled={disabled || isUploading}
-          className={cn(
-            "p-2 rounded-full transition-colors",
-            disabled || isUploading
-              ? "text-muted-foreground cursor-not-allowed opacity-50"
-              : "hover:bg-accent text-muted-foreground hover:text-foreground"
-          )}
-          title={isUploading ? "Uploading..." : "Upload image"}
-        >
-          <Image className="h-5 w-5" />
-        </button>
-
-        {/* Message input */}
-        <div className="flex-1 flex items-center bg-accent/50 rounded-full px-4">
+    <form onSubmit={handleSubmit} className="relative">
+      <div className="flex items-center gap-2 p-2 bg-background/95 border-t border-border">
+        {/* Left side buttons */}
+        <div className="flex items-center gap-1">
           <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder={isUploading ? "Uploading..." : placeholder}
-            className="flex-1 bg-transparent py-2 focus:outline-none placeholder:text-muted-foreground text-foreground"
-            disabled={disabled || isSending || isUploading}
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileSelect}
+            className="hidden"
+            accept=".pdf,.doc,.docx,.txt,.zip,.rar"
+            disabled={disabled || isUploading}
           />
-            {/* Emoji picker button */}
-          <button 
+          <input
+            type="file"
+            ref={imageInputRef}
+            onChange={handleImageSelect}
+            className="hidden"
+            accept="image/*"
+            disabled={disabled || isUploading}
+          />
+          <button
             type="button"
-            ref={emojiButtonRef}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={disabled || isUploading}
+            className="p-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors"
+          >
+            <Paperclip className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => imageInputRef.current?.click()}
+            disabled={disabled || isUploading}
+            className="p-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors"
+          >
+            <Image className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className={cn(
-              "p-2 rounded-full transition-colors ml-2",
-              disabled || isSending || isUploading
-                ? "text-muted-foreground cursor-not-allowed opacity-50"
-                : showEmojiPicker
-                ? "bg-accent text-foreground"
-                : "hover:bg-accent text-muted-foreground hover:text-foreground"
-            )}
-            title={isSending ? "Sending..." : "Add emoji"}
-            disabled={disabled || isSending || isUploading}
+            disabled={disabled}
+            className="p-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors"
           >
             <Smile className="h-5 w-5" />
           </button>
+        </div>
 
-          {/* Voice message button */}
-          <button 
+        {/* Message input */}
+        <input
+          type="text"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled || isUploading}
+          className="flex-1 px-4 py-2 bg-accent/20 dark:bg-accent/30 rounded-lg border border-border/40 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground text-sm placeholder:text-muted-foreground"
+        />
+
+        {/* Right side buttons */}
+        <div className="flex items-center gap-1">
+          <button
             type="button"
             onClick={isRecording ? stopRecording : startRecording}
-            className={cn(
-              "p-2 rounded-full transition-colors ml-2",
-              disabled || isUploading
-                ? "text-muted-foreground cursor-not-allowed opacity-50"
-                : isRecording
-                ? "bg-red-500 text-white"
-                : "hover:bg-accent text-muted-foreground hover:text-foreground"
-            )}
-            title={isRecording ? "Stop recording" : "Record voice message"}
             disabled={disabled || isUploading}
+            className={cn(
+              "p-2 rounded-lg transition-colors",
+              isRecording 
+                ? "text-destructive hover:bg-destructive/10" 
+                : "text-muted-foreground hover:text-primary hover:bg-accent"
+            )}
           >
             <Mic className="h-5 w-5" />
           </button>
+          <button
+            type="submit"
+            disabled={disabled || isUploading || !message.trim()}
+            className="p-2 text-primary hover:bg-accent rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Send className="h-5 w-5" />
+          </button>
         </div>
+      </div>
 
-        {/* Send button */}
-        <button
-          type="submit"
-          disabled={!message.trim() || disabled || isSending || isUploading}
-          className={cn(
-            "p-3 rounded-full transition-colors",
-            message.trim() && !disabled && !isSending && !isUploading
-              ? "bg-primary text-primary-foreground hover:bg-primary/90"
-              : "bg-accent/50 text-muted-foreground cursor-not-allowed"
-          )}
-          title={isUploading ? "Uploading..." : "Send message"}
+      {/* Emoji picker */}
+      {showEmojiPicker && (
+        <div
+          ref={emojiPickerRef}
+          className="absolute bottom-full left-0 mb-2"
         >
-          <Send className="h-5 w-5" />
-        </button>
-      </form>
+          <Picker
+            data={data}
+            onEmojiSelect={handleEmojiSelect}
+            theme={theme}
+            set="native"
+            previewPosition="none"
+            skinTonePosition="none"
+          />
+        </div>
+      )}
 
-      {/* Recording error message */}
+      {/* Recording error toast */}
       {recordingError && (
-        <div className="mt-2 text-red-500 text-sm">
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg shadow-lg">
           {recordingError}
         </div>
       )}
-    </div>
+    </form>
   );
 }
 

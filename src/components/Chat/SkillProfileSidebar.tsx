@@ -293,288 +293,297 @@ const SkillProfileSidebar: React.FC<SkillProfileSidebarProps> = ({ selectedUser,
   }
 
   return (
-    <div className="h-full flex flex-col min-h-0">
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {/* Skill Profile Section */}
-        <Card className="shadow-sm">
-          <CardHeader className="space-y-2 pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold">
-              <Brain className="h-5 w-5 text-purple-600" />
-              Skill Profile
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <img
-                src={profile?.avatar_url || '/placeholder.svg'}
-                alt={profile?.full_name || 'Profile'}
-                className="w-16 h-16 rounded-full object-cover border-2 border-border"
-              />
-              <div className="min-w-0">
-                <h3 className="font-semibold truncate">{profile?.full_name}</h3>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {profile?.bio || 'No bio provided'}
+    <div className="flex flex-col h-full">
+      <h2 className="text-2xl font-bold mb-6 text-foreground">Skill Profile</h2>
+      {selectedUser ? (
+        <div className="flex-1 overflow-y-auto scrollbar-thin">
+          {/* Skill Profile Section */}
+          <Card className="shadow-sm">
+            <CardHeader className="space-y-2 pb-4">
+              <CardTitle className="flex items-center gap-3 text-lg font-semibold">
+                <Brain className="h-5 w-5 text-purple-600" />
+                Skill Profile
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-4">
+                <img
+                  src={profile?.avatar_url || '/placeholder.svg'}
+                  alt={profile?.full_name || 'Profile'}
+                  className="w-16 h-16 rounded-full object-cover border-2 border-border"
+                />
+                <div className="min-w-0">
+                  <h3 className="font-semibold truncate">{profile?.full_name}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {profile?.bio || 'No bio provided'}
+                  </p>
+                </div>
+              </div>
+              
+              {profile?.skills_teach && profile.skills_teach.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-sm font-medium text-muted-foreground">Can Teach:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {profile.skills_teach.map((skill, i) => (
+                      <Badge key={i} variant="secondary" className="bg-purple-100 text-purple-900 dark:bg-purple-800 dark:text-purple-100">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {profile?.skills_learn && profile.skills_learn.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-sm font-medium text-muted-foreground">Wants to Learn:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {profile.skills_learn.map((skill, i) => (
+                      <Badge key={i} variant="secondary" className="bg-blue-100 text-blue-900 dark:bg-blue-800 dark:text-blue-100">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {profile?.location && (
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    {profile.location}
+                  </Badge>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Shared Resources Section */}
+          <Card className="shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between pb-4">
+              <CardTitle className="flex items-center gap-3 text-lg font-semibold">
+                <LinkIcon className="h-5 w-5 text-green-600" />
+                Resources
+              </CardTitle>
+              {chatConnectionId && (
+                <Button
+                  onClick={() => setIsResourceDialogOpen(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {resources.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-2">
+                  No resources shared yet
                 </p>
-              </div>
-            </div>
-            
-            {profile?.skills_teach && profile.skills_teach.length > 0 && (
-              <div className="space-y-2">
-                <span className="text-sm font-medium text-muted-foreground">Can Teach:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {profile.skills_teach.map((skill, i) => (
-                    <Badge key={i} variant="secondary" className="bg-purple-100 text-purple-900 dark:bg-purple-800 dark:text-purple-100">
-                      {skill}
-                    </Badge>
+              ) : (
+                <div className="space-y-2">
+                  {resources.map((resource) => (
+                    <a
+                      key={resource.id}
+                      href={resource.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block p-2 rounded-lg hover:bg-accent/50 transition-colors"
+                    >
+                      <div className="flex items-start gap-2">
+                        <LinkIcon className="h-4 w-4 text-blue-600 mt-1 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium truncate">{resource.title}</p>
+                          {resource.description && (
+                            <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                              {resource.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </a>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </CardContent>
+          </Card>
 
-            {profile?.skills_learn && profile.skills_learn.length > 0 && (
-              <div className="space-y-2">
-                <span className="text-sm font-medium text-muted-foreground">Wants to Learn:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {profile.skills_learn.map((skill, i) => (
-                    <Badge key={i} variant="secondary" className="bg-blue-100 text-blue-900 dark:bg-blue-800 dark:text-blue-100">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {profile?.location && (
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-xs">
-                  {profile.location}
-                </Badge>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Shared Resources Section */}
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold">
-              <LinkIcon className="h-5 w-5 text-green-600" />
-              Resources
-            </CardTitle>
-            {chatConnectionId && (
-              <Button
-                onClick={() => setIsResourceDialogOpen(true)}
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {resources.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-2">
-                No resources shared yet
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {resources.map((resource) => (
-                  <a
-                    key={resource.id}
-                    href={resource.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block p-2 rounded-lg hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex items-start gap-2">
-                      <LinkIcon className="h-4 w-4 text-blue-600 mt-1 flex-shrink-0" />
+          {/* Tasks Section */}
+          <Card className="shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between pb-4">
+              <CardTitle className="flex items-center gap-3 text-lg font-semibold">
+                <ListTodo className="h-5 w-5 text-orange-600" />
+                Tasks
+              </CardTitle>
+              {chatConnectionId && (
+                <Button
+                  onClick={() => setIsTaskDialogOpen(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {tasks.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-2">
+                  No tasks yet
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {tasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors"
+                    >
+                      <Checkbox
+                        checked={task.completed}
+                        onCheckedChange={(checked) => toggleTask(task.id, checked as boolean)}
+                        className="mt-1"
+                      />
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">{resource.title}</p>
-                        {resource.description && (
-                          <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
-                            {resource.description}
+                        <p className={cn(
+                          "text-sm font-medium",
+                          task.completed && "line-through text-muted-foreground"
+                        )}>
+                          {task.title}
+                        </p>
+                        {task.description && (
+                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                            {task.description}
+                          </p>
+                        )}
+                        {task.due_date && (
+                          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {format(new Date(task.due_date), 'MMM d, yyyy')}
                           </p>
                         )}
                       </div>
                     </div>
-                  </a>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Tasks Section */}
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold">
-              <ListTodo className="h-5 w-5 text-orange-600" />
-              Tasks
-            </CardTitle>
-            {chatConnectionId && (
-              <Button
-                onClick={() => setIsTaskDialogOpen(true)}
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {tasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-2">
-                No tasks yet
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {tasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors"
-                  >
-                    <Checkbox
-                      checked={task.completed}
-                      onCheckedChange={(checked) => toggleTask(task.id, checked as boolean)}
-                      className="mt-1"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className={cn(
-                        "text-sm font-medium",
-                        task.completed && "line-through text-muted-foreground"
-                      )}>
-                        {task.title}
-                      </p>
-                      {task.description && (
-                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                          {task.description}
-                        </p>
-                      )}
-                      {task.due_date && (
-                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {format(new Date(task.due_date), 'MMM d, yyyy')}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Next Session Section */}
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold">
-              <CalendarDays className="h-5 w-5 text-blue-600" />
-              Next Session
-            </CardTitle>
-            {chatConnectionId && (
-              <Button
-                onClick={() => setIsSessionDialogOpen(true)}
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent>
-            {nextSession ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Calendar className="h-4 w-4 text-blue-600" />
-                  {format(new Date(nextSession.scheduled_at), 'MMMM d, yyyy')}
-                </div>
-                <div className="p-3 rounded-lg bg-accent/50 space-y-2">
-                  <h4 className="font-medium">{nextSession.title}</h4>
-                  {nextSession.description && (
-                    <p className="text-sm text-muted-foreground">
-                      {nextSession.description}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {format(new Date(nextSession.scheduled_at), 'h:mm a')}
-                    </span>
-                    <span>•</span>
-                    <span>{nextSession.duration} minutes</span>
-                  </div>
-                  {nextSession.meeting_link && (
-                    <a
-                      href={nextSession.meeting_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-1"
-                    >
-                      Join Meeting
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-2">
-                No upcoming sessions
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Availability Section */}
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg font-semibold">
-              <Clock className="h-5 w-5 text-teal-600" />
-              Availability
-            </CardTitle>
-            {user?.id === selectedUser?.id && (
-              <Button
-                onClick={() => setIsAvailabilityDialogOpen(true)}
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent>
-            {availability.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-2">
-                No availability set
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {availability
-                  .sort((a, b) => a.day_of_week - b.day_of_week)
-                  .map((slot) => (
-                    <div
-                      key={slot.id}
-                      className="flex items-center gap-3 p-2 rounded-lg bg-accent/50"
-                    >
-                      <div className="w-20 text-sm font-medium">
-                        {formatDay(slot.day_of_week)}
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {format(parse(slot.start_time, 'HH:mm', new Date()), 'h:mm a')}
-                        {' - '}
-                        {format(parse(slot.end_time, 'HH:mm', new Date()), 'h:mm a')}
-                      </div>
-                    </div>
                   ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Next Session Section */}
+          <Card className="shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between pb-4">
+              <CardTitle className="flex items-center gap-3 text-lg font-semibold">
+                <CalendarDays className="h-5 w-5 text-blue-600" />
+                Next Session
+              </CardTitle>
+              {chatConnectionId && (
+                <Button
+                  onClick={() => setIsSessionDialogOpen(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent>
+              {nextSession ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Calendar className="h-4 w-4 text-blue-600" />
+                    {format(new Date(nextSession.scheduled_at), 'MMMM d, yyyy')}
+                  </div>
+                  <div className="p-3 rounded-lg bg-accent/50 space-y-2">
+                    <h4 className="font-medium">{nextSession.title}</h4>
+                    {nextSession.description && (
+                      <p className="text-sm text-muted-foreground">
+                        {nextSession.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {format(new Date(nextSession.scheduled_at), 'h:mm a')}
+                      </span>
+                      <span>•</span>
+                      <span>{nextSession.duration} minutes</span>
+                    </div>
+                    {nextSession.meeting_link && (
+                      <a
+                        href={nextSession.meeting_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-1"
+                      >
+                        Join Meeting
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-2">
+                  No upcoming sessions
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Availability Section */}
+          <Card className="shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between pb-4">
+              <CardTitle className="flex items-center gap-3 text-lg font-semibold">
+                <Clock className="h-5 w-5 text-teal-600" />
+                Availability
+              </CardTitle>
+              {user?.id === selectedUser?.id && (
+                <Button
+                  onClick={() => setIsAvailabilityDialogOpen(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent>
+              {availability.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-2">
+                  No availability set
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {availability
+                    .sort((a, b) => a.day_of_week - b.day_of_week)
+                    .map((slot) => (
+                      <div
+                        key={slot.id}
+                        className="flex items-center gap-3 p-2 rounded-lg bg-accent/50"
+                      >
+                        <div className="w-20 text-sm font-medium">
+                          {formatDay(slot.day_of_week)}
+                        </div>
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          {format(parse(slot.start_time, 'HH:mm', new Date()), 'h:mm a')}
+                          {' - '}
+                          {format(parse(slot.end_time, 'HH:mm', new Date()), 'h:mm a')}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-center text-muted-foreground">
+            Select a user to view their skill profile
+          </p>
+        </div>
+      )}
 
       {/* Dialogs */}
       {/* Resource Dialog */}
