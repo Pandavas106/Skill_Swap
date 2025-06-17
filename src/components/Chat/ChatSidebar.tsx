@@ -167,8 +167,17 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectUser, selectedUserId 
     setError(null);
   };
 
+  // Helper to get initials from full name
+  const getInitials = (name: string) => {
+    if (!name) return '';
+    const parts = name.split(' ');
+    return parts.length === 1
+      ? parts[0][0].toUpperCase()
+      : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
   return (
-    <div className="p-4 flex flex-col h-full bg-white dark:bg-background border-r border-border/40">
+    <div className="flex flex-col h-full">
       <h2 className="text-2xl font-bold mb-6 text-foreground">Messages</h2>
       <div className="relative mb-6">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
@@ -176,11 +185,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectUser, selectedUserId 
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search or start a new chat..."
+          placeholder="Search..."
           className="w-full px-10 py-2.5 rounded-lg bg-accent/20 dark:bg-accent/30 border border-border/40 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground text-sm placeholder:text-muted-foreground"
         />
       </div>
-      <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+      <div className="flex-1 overflow-y-auto scrollbar-thin">
         {error ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-4">
             <p className="text-destructive mb-4">{error}</p>
@@ -200,35 +209,35 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectUser, selectedUserId 
             {searchQuery ? 'No users found' : 'No recent chats'}
           </div>
         ) : (
-          filteredUsers.map((user) => (
-            <button
-              key={user.id}
-              onClick={() => handleUserClick(user)}
-              className={`w-full flex items-center p-3 rounded-xl transition-colors cursor-pointer ${
-                selectedUserId === user.id 
-                  ? 'bg-primary/10 dark:bg-primary/20 border border-primary/30' 
-                  : 'hover:bg-accent/30'
-              }`}
-            >
-              <img 
-                src={user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name)}`} 
-                alt={user.full_name} 
-                className="w-12 h-12 rounded-full mr-4 object-cover border border-border/40 shadow-sm" 
-              />
-              <div className="flex-grow text-left">
-                <p className="font-semibold text-base text-foreground mb-0.5">{user.full_name}</p>
-                <p className="text-sm text-muted-foreground truncate max-w-[180px]">{user.lastMessage}</p>
-              </div>
-              <div className="flex flex-col items-end">
-                <div className="text-xs text-muted-foreground mb-1">{user.timestamp}</div>
-                {user.unread > 0 && (
-                  <div className="px-2 py-0.5 text-xs rounded-full bg-purple-500 text-white font-bold min-w-[20px] text-center">
-                    {user.unread}
+          <div className="space-y-1">
+            {filteredUsers.map((user) => (
+              <div
+                key={user.id}
+                className={`flex items-center gap-3 py-2 px-3 hover:bg-accent/50 rounded-lg transition-all cursor-pointer ${
+                  selectedUserId === user.id ? 'bg-accent/70' : ''
+                }`}
+                onClick={() => handleUserClick(user)}
+              >
+                {user.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt={user.full_name}
+                    className="w-10 h-10 rounded-full object-cover bg-gray-700 border border-border/40"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-semibold">
+                    {getInitials(user.full_name)}
                   </div>
                 )}
+                <div className="flex flex-col overflow-hidden">
+                  <span className="text-foreground font-semibold text-sm">{user.full_name}</span>
+                  <span className="text-muted-foreground text-xs whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px] block">
+                    {user.lastMessage}
+                  </span>
+                </div>
               </div>
-            </button>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>

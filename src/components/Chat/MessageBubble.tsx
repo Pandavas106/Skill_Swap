@@ -88,7 +88,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMessage }) 
     >
       <div
         className={cn(
-          'max-w-[70%] rounded-lg px-4 py-2',
+          'max-w-[85%] sm:max-w-[75%] rounded-lg break-words',
           message.message_type === 'image' ? 'p-2' : 'px-4 py-2',
           isOwnMessage
             ? 'bg-primary text-primary-foreground'
