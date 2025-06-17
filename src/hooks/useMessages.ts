@@ -72,50 +72,66 @@ export function useMessages(senderId: string, receiverId: string) {
     return () => {
       channel.unsubscribe();
     };
-  }, [senderId, receiverId, fetchMessages]);
-  // Send message function
-  const sendMessage = async (
+  }, [senderId, receiverId, fetchMessages]);  const sendMessage = async (
     content: string,
     messageType: MessageType = 'text',
     fileUrl?: string,
     fileName?: string
   ): Promise<void> => {
-    if (!senderId || !receiverId || !content.trim()) {
-      throw new Error('Cannot send message: Invalid input');
+    // Input validation
+    if (!senderId || !receiverId) {
+      console.error('Missing sender or receiver ID:', { senderId, receiverId });
+      throw new Error('Cannot send message: Missing user IDs');
     }
 
     try {
-      console.log('Sending message with content:', content);
-      console.log('Message type:', messageType);
+      const timestamp = new Date().toISOString();
+      let messageContent = content.trim();
       
-      const timestamp = new Date().toISOString();      const messageData = {
+      if (messageType === 'text' && !messageContent) {
+        throw new Error('Cannot send empty message');
+      }
+      
+      if ((messageType === 'file' || messageType === 'image' || messageType === 'audio') && !fileUrl) {
+        throw new Error(`Cannot send ${messageType} message without file URL`);
+      }
+      
+      // For file-based messages, use a default content if none provided
+      if (messageType !== 'text' && !messageContent) {
+        messageContent = `Sent ${messageType === 'audio' ? 'a voice message' : 
+                         messageType === 'image' ? 'an image' : 'a file'}`;
+      }
+      
+      const messageData = {
         sender_id: senderId,
         receiver_id: receiverId,
-        content: content.trim(),
+        content: messageContent,
         message_type: messageType,
         created_at: timestamp,
-        timestamp: timestamp, // Add timestamp field
-        ...(messageType !== 'text' && {
-          file_url: fileUrl,
-          file_name: fileName,
-        }),
+        timestamp: timestamp,
+        file_url: fileUrl || null,
+        file_name: fileName || null
       };
       
-      console.log('Message data being sent:', messageData);
+      console.log('Sending message data:', messageData);
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
-        .insert([messageData]);
+        .insert([messageData])
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
-      // Optimistically add the message to the state
-      const newMessage: Message = {
-        id: `temp_${Date.now()}`, // Will be replaced by real ID from subscription
-        ...messageData
-      };
+      console.log('Message sent successfully:', data);
 
-      setMessages(current => [...current, newMessage]);
+      // Add the message to local state
+      if (data?.[0]) {
+        setMessages(current => [...current, data[0]]);
+      }
+
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;
