@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Video, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useVideoCalls } from '@/hooks/useVideoCalls';
+import VideoCallPopup from './VideoCallPopup';
 
 interface ChatUser {
   id: string;
@@ -28,6 +30,18 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectUser, selectedUserId 
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [retryCount, setRetryCount] = useState(0);
+
+  // Video call functionality
+  const {
+    initiateCall,
+    incomingCall,
+    outgoingCall,
+    callerProfile,
+    isIncomingCallOpen,
+    isOutgoingCallOpen,
+    closeIncomingCall,
+    closeOutgoingCall
+  } = useVideoCalls();
 
   useEffect(() => {
     if (!user) return;
@@ -162,6 +176,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectUser, selectedUserId 
     onSelectUser(user);
   };
 
+  const handleVideoCall = (e: React.MouseEvent, userId: string) => {
+    e.stopPropagation(); // Prevent triggering user selection
+    initiateCall(userId);
+  };
+
   const handleRetry = () => {
     setRetryCount(0);
     setError(null);
@@ -177,70 +196,98 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectUser, selectedUserId 
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <h2 className="text-2xl font-bold mb-6 text-foreground">Messages</h2>
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search..."
-          className="w-full px-10 py-2.5 rounded-lg bg-accent/20 dark:bg-accent/30 border border-border/40 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground text-sm placeholder:text-muted-foreground"
-        />
-      </div>
-      <div className="flex-1 overflow-y-auto scrollbar-thin">
-        {error ? (
-          <div className="flex flex-col items-center justify-center h-full text-center p-4">
-            <p className="text-destructive mb-4">{error}</p>
-            <button
-              onClick={handleRetry}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        ) : loading ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : filteredUsers.length === 0 ? (
-          <div className="text-center text-muted-foreground py-4">
-            {searchQuery ? 'No users found' : 'No recent chats'}
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {filteredUsers.map((user) => (
-              <div
-                key={user.id}
-                className={`flex items-center gap-3 py-2 px-3 hover:bg-accent/50 rounded-lg transition-all cursor-pointer ${
-                  selectedUserId === user.id ? 'bg-accent/70' : ''
-                }`}
-                onClick={() => handleUserClick(user)}
+    <>
+      <div className="flex flex-col h-full">
+        <h2 className="text-2xl font-bold mb-6 text-foreground">Messages</h2>
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search..."
+            className="w-full px-10 py-2.5 rounded-lg bg-accent/20 dark:bg-accent/30 border border-border/40 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground text-sm placeholder:text-muted-foreground"
+          />
+        </div>
+        <div className="flex-1 overflow-y-auto scrollbar-thin">
+          {error ? (
+            <div className="flex flex-col items-center justify-center h-full text-center p-4">
+              <p className="text-destructive mb-4">{error}</p>
+              <button
+                onClick={handleRetry}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
               >
-                {user.avatar_url ? (
-                  <img
-                    src={user.avatar_url}
-                    alt={user.full_name}
-                    className="w-10 h-10 rounded-full object-cover bg-gray-700 border border-border/40"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-semibold">
-                    {getInitials(user.full_name)}
+                Retry
+              </button>
+            </div>
+          ) : loading ? (
+            <div className="flex justify-center items-center h-full">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="text-center text-muted-foreground py-4">
+              {searchQuery ? 'No users found' : 'No recent chats'}
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {filteredUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className={`flex items-center gap-3 py-2 px-3 hover:bg-accent/50 rounded-lg transition-all cursor-pointer group ${
+                    selectedUserId === user.id ? 'bg-accent/70' : ''
+                  }`}
+                  onClick={() => handleUserClick(user)}
+                >
+                  {user.avatar_url ? (
+                    <img
+                      src={user.avatar_url}
+                      alt={user.full_name}
+                      className="w-10 h-10 rounded-full object-cover bg-gray-700 border border-border/40"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-semibold">
+                      {getInitials(user.full_name)}
+                    </div>
+                  )}
+                  <div className="flex flex-col overflow-hidden flex-1">
+                    <span className="text-foreground font-semibold text-sm">{user.full_name}</span>
+                    <span className="text-muted-foreground text-xs whitespace-nowrap overflow-hidden text-ellipsis max-w-[140px] block">
+                      {user.lastMessage}
+                    </span>
                   </div>
-                )}
-                <div className="flex flex-col overflow-hidden">
-                  <span className="text-foreground font-semibold text-sm">{user.full_name}</span>
-                  <span className="text-muted-foreground text-xs whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px] block">
-                    {user.lastMessage}
-                  </span>
+                  
+                  {/* Video Call Button */}
+                  <button
+                    onClick={(e) => handleVideoCall(e, user.id)}
+                    className="opacity-0 group-hover:opacity-100 p-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                    title="Start video call"
+                  >
+                    <Video className="w-4 h-4" />
+                  </button>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* Video Call Popups */}
+      <VideoCallPopup
+        isOpen={isIncomingCallOpen}
+        onClose={closeIncomingCall}
+        callData={incomingCall}
+        callerProfile={callerProfile}
+        isIncoming={true}
+      />
+      
+      <VideoCallPopup
+        isOpen={isOutgoingCallOpen}
+        onClose={closeOutgoingCall}
+        callData={outgoingCall}
+        callerProfile={null}
+        isIncoming={false}
+      />
+    </>
   );
 };
 
