@@ -55,6 +55,41 @@ export interface Database {
           updated_at?: string
         }
       }
+      calls: {
+        Row: {
+          id: string
+          caller_id: string
+          receiver_id: string
+          link: string
+          caller_accepted: boolean | null
+          receiver_accepted: boolean | null
+          status: 'pending' | 'accepted' | 'rejected' | 'completed'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          caller_id: string
+          receiver_id: string
+          link: string
+          caller_accepted?: boolean | null
+          receiver_accepted?: boolean | null
+          status?: 'pending' | 'accepted' | 'rejected' | 'completed'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          caller_id?: string
+          receiver_id?: string
+          link?: string
+          caller_accepted?: boolean | null
+          receiver_accepted?: boolean | null
+          status?: 'pending' | 'accepted' | 'rejected' | 'completed'
+          created_at?: string
+          updated_at?: string
+        }
+      }
       chat_connections: {
         Row: {
           id: string
@@ -285,6 +320,7 @@ export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U
 export type DbResultErr = PostgrestError
 
 export type Profile = Database['public']['Tables']['profiles']['Row']
+export type Call = Database['public']['Tables']['calls']['Row']
 export type ChatConnection = Database['public']['Tables']['chat_connections']['Row']
 export type Message = Database['public']['Tables']['messages']['Row']
 export type SharedResource = Database['public']['Tables']['shared_resources']['Row']

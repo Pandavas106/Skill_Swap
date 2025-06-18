@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import MessageBubble from './MessageBubble';
-import { Phone, Video, History, UserCircle, X, MessageSquare } from 'lucide-react';
+import { History, UserCircle, MessageSquare } from 'lucide-react';
 import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/hooks/useAuth';
 import type { MessageType } from '@/integrations/supabase/types';
@@ -55,7 +55,7 @@ export default function ChatMessages({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, loading, sendMessage } = useMessages(user?.id || '', selectedUser?.id || '');
 
-  // --- Video Call State and Logic ---
+  // --- Call History State and Logic ---
   const [calls, setCalls] = useState<{ id: string; link: string; created_at: string }[]>([]);
   const [loadingCalls, setLoadingCalls] = useState(false);
   const [callError, setCallError] = useState<string | null>(null);
@@ -64,14 +64,14 @@ export default function ChatMessages({
   // Fetch previous calls for this chat connection
   useEffect(() => {
     const fetchCalls = async () => {
-      if (!chatConnectionId) return;
+      if (!user?.id || !selectedUser?.id) return;
       setLoadingCalls(true);
       setCallError(null);
       try {
         const { data, error } = await supabase
           .from('calls')
           .select('id, link, created_at')
-          .eq('match_id', chatConnectionId)
+          .or(`and(caller_id.eq.${user.id},receiver_id.eq.${selectedUser.id}),and(caller_id.eq.${selectedUser.id},receiver_id.eq.${user.id})`)
           .order('created_at', { ascending: false });
         if (error) throw error;
         setCalls(data || []);
@@ -85,42 +85,7 @@ export default function ChatMessages({
       }
     };
     fetchCalls();
-  }, [chatConnectionId]);
-
-  // Start a new video call
-  const handleStartVideoCall = async () => {
-    if (!chatConnectionId) return;
-    const timestamp = Date.now();
-    const link = `https://meet.jit.si/skillswap-${chatConnectionId}-${timestamp}`;
-    
-    // Show toast before opening the link
-    toast.success('Starting video call...', {
-      description: 'A new tab will open with your video call.',
-      action: {
-        label: 'Open Again',
-        onClick: () => window.open(link, '_blank', 'noopener')
-      }
-    });
-
-    // Open the link
-    window.open(link, '_blank', 'noopener');
-    
-    // Insert into Supabase
-    try {
-      const { error } = await supabase
-        .from('calls')
-        .insert({ match_id: chatConnectionId, link });
-      if (error) throw error;
-      
-      // Optimistically update UI
-      setCalls(prev => [{ id: crypto.randomUUID(), link, created_at: new Date().toISOString() }, ...prev]);
-    } catch (err: any) {
-      setCallError('Failed to save call link');
-      toast.error('Could not save call history', {
-        description: 'The call is still active, but it won\'t appear in your call history.'
-      });
-    }
-  };
+  }, [user?.id, selectedUser?.id]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -253,24 +218,14 @@ export default function ChatMessages({
               isProfileOpen ? 'accent' : 'primary'
             )}
             {renderActionButton(
-              <Video className={cn(
-                "transition-all duration-200",
-                isProfileOpen ? "h-5 w-5" : "h-5 w-5"
-              )} />,
-              "Start Video Call",
-              handleStartVideoCall,
-              'primary',
-              !chatConnectionId
-            )}
-            {renderActionButton(
               <History className={cn(
                 "transition-all duration-200",
                 isProfileOpen ? "h-5 w-5" : "h-5 w-5"
               )} />,
-              "History",
+              "Call History",
               () => setIsHistoryOpen(true),
               'muted',
-              !chatConnectionId
+              !selectedUser
             )}
           </div>
         </div>
@@ -319,7 +274,9 @@ export default function ChatMessages({
                     className="flex items-center justify-between p-3 rounded-lg border border-border/50 hover:bg-accent/50 transition-colors group"
                   >
                     <div className="flex items-center gap-3">
-                      <Video className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <div className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors">
+                        📞
+                      </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-medium">
                           Video Call
