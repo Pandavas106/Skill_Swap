@@ -84,7 +84,33 @@ export default function TestingPage() {
 
   const generateQuestionsBatch = async (_startIndex: number, count: number) => {
     console.log('Starting question generation...');
-    const prompt = `Generate ${count} ${level} multiple-choice questions for a test titled "${title}".\n${description}\nEach question must have:\n- A question string\n- 4 options labeled A, B, C, and D\n- A correct option key\n- A short explanation\n\nRespond in this JSON format:\n[\n  {\n    \"question\": \"string\",\n    \"options\": {\n      \"A\": \"string\",\n      \"B\": \"string\",\n      \"C\": \"string\",\n      \"D\": \"string\"\n    },\n    \"correct\": \"A\",\n    \"explanation\": \"string\"\n  }\n]`;
+    const prompt = `Generate exactly ${count} ${level} multiple-choice questions for a test titled "${title}".
+${description}
+
+IMPORTANT: Return ONLY valid JSON. No extra text, markdown, or explanations.
+
+Each question must have:
+- A question string
+- 4 options labeled A, B, C, and D  
+- A correct option key (A, B, C, or D)
+- A short explanation
+
+Return in this EXACT JSON format with double quotes:
+[
+  {
+    "question": "What is the question text?",
+    "options": {
+      "A": "First option",
+      "B": "Second option", 
+      "C": "Third option",
+      "D": "Fourth option"
+    },
+    "correct": "A",
+    "explanation": "Brief explanation of why A is correct"
+  }
+]
+
+Generate exactly ${count} questions in this format. Return ONLY the JSON array, nothing else.`;
     
     try {
       console.log('Calling Gemini API...');
@@ -113,20 +139,72 @@ export default function TestingPage() {
         throw new Error('Empty response from API');
       }
 
+      // More robust JSON extraction and parsing
+      let jsonString = '';
+      let parsed = null;
+
+      // Try to extract JSON array from the response
       const match = text.match(/\[\s*{[\s\S]*}\s*]/);
-      if (!match) {
-        console.error('No JSON array found in response:', text);
-        throw new Error('Invalid response format from API');
+      if (match) {
+        jsonString = match[0];
+      } else {
+        // If no array found, try to find just the JSON content
+        const cleanText = text.trim();
+        if (cleanText.startsWith('[') && cleanText.endsWith(']')) {
+          jsonString = cleanText;
+        } else {
+          console.error('No JSON array found in response:', text);
+          throw new Error('Invalid response format from API - no JSON array found');
+        }
       }
 
-      const parsed = JSON.parse(match[0]);
+      // Clean and fix common JSON issues
+      let cleanJson = '';
+      try {
+        // Replace single quotes with double quotes (common AI mistake)
+        cleanJson = jsonString
+          .replace(/'/g, '"')
+          .replace(/(\w+):/g, '"$1":') // Fix unquoted keys
+          .replace(/,\s*}/g, '}')      // Remove trailing commas
+          .replace(/,\s*]/g, ']');     // Remove trailing commas in arrays
+
+        parsed = JSON.parse(cleanJson);
+      } catch (firstError) {
+        try {
+          // If that fails, try parsing the original
+          parsed = JSON.parse(jsonString);
+        } catch (secondError) {
+          console.error('JSON parsing failed:', {
+            original: jsonString,
+            cleaned: cleanJson,
+            firstError: firstError.message,
+            secondError: secondError.message
+          });
+          throw new Error(`Failed to parse JSON response: ${secondError.message}`);
+        }
+      }
+
       console.log('Successfully parsed questions');
       
       if (!Array.isArray(parsed) || parsed.length === 0) {
         throw new Error('No questions generated');
       }
 
-      return parsed;
+      // Validate question structure
+      const validQuestions = parsed.filter(q => 
+        q && 
+        typeof q.question === 'string' && 
+        q.options && 
+        typeof q.options === 'object' &&
+        q.correct &&
+        q.explanation
+      );
+
+      if (validQuestions.length === 0) {
+        throw new Error('No valid questions found in response');
+      }
+
+      return validQuestions;
     } catch (err) {
       console.error('Error in generateQuestionsBatch:', err);
       throw err;
