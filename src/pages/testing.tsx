@@ -5,11 +5,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-export const GEMINI_API_KEY = "your-gemini-api-key-here";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const BATCH_SIZE = 5; // Number of questions to generate at once
 
