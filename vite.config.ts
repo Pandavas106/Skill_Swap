@@ -9,6 +9,11 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  build: {
+    outDir: "dist",
+    sourcemap: false,
+    minify: "terser",
+  },
   plugins: [
     react(),
     mode === 'development' &&
